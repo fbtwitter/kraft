@@ -1,54 +1,54 @@
 /* ─────────────────────────────────────────────────────────────
-   Theme tokens — Langit (Ghibli painted sky), light + dark.
+   Theme tokens — kraft.
    Switched via [data-mode="light|dark"] on <html>.
    ───────────────────────────────────────────────────────────── */
 
 :root {
-  --bg: oklch(95% 0.022 220);
-  --bg-2: oklch(92% 0.035 220);
-  --surface: oklch(97% 0.014 90);
-  --ink: oklch(28% 0.045 250);
-  --ink-2: oklch(48% 0.04 250);
-  --ink-3: oklch(64% 0.035 230);
-  --rule: oklch(86% 0.028 220);
-  --accent: oklch(64% 0.14 55);
-  --accent-soft: oklch(64% 0.14 55 / 0.14);
-  --selection: oklch(64% 0.14 55 / 0.26);
+  --bg: oklch(97% 0.006 110);
+  --bg-2: oklch(93% 0.01 110);
+  --surface: oklch(99% 0.004 110);
+  --ink: oklch(20% 0.02 260);
+  --ink-2: oklch(42% 0.018 260);
+  --ink-3: oklch(60% 0.014 260);
+  --rule: oklch(88% 0.01 260);
+  --accent: oklch(52% 0.18 160);
+  --accent-soft: oklch(52% 0.18 160 / 0.12);
+  --selection: oklch(52% 0.18 160 / 0.22);
 
-  --display-weight: 380;
-  --display-letter: -0.012em;
-  --display-italic: italic;
+  --display-weight: 400;
+  --display-letter: -0.02em;
+  --display-italic: normal;
 
-  --grain: 0.025;
-  --radius: 4px;
+  --grain: 0.018;
+  --radius: 0px;
   --max-w: 1200px;
   --read-w: 680px;
 }
 
 html[data-mode="light"] {
-  --bg: oklch(95% 0.022 220);
-  --bg-2: oklch(92% 0.035 220);
-  --surface: oklch(97% 0.014 90);
-  --ink: oklch(28% 0.045 250);
-  --ink-2: oklch(48% 0.04 250);
-  --ink-3: oklch(64% 0.035 230);
-  --rule: oklch(86% 0.028 220);
-  --accent: oklch(64% 0.14 55);
-  --accent-soft: oklch(64% 0.14 55 / 0.14);
-  --selection: oklch(64% 0.14 55 / 0.26);
-  --grain: 0.025;
+  --bg: oklch(97% 0.006 110);
+  --bg-2: oklch(93% 0.01 110);
+  --surface: oklch(99% 0.004 110);
+  --ink: oklch(20% 0.02 260);
+  --ink-2: oklch(42% 0.018 260);
+  --ink-3: oklch(60% 0.014 260);
+  --rule: oklch(88% 0.01 260);
+  --accent: oklch(52% 0.18 160);
+  --accent-soft: oklch(52% 0.18 160 / 0.12);
+  --selection: oklch(52% 0.18 160 / 0.22);
+  --grain: 0.018;
 }
 
 html[data-mode="dark"] {
-  --bg: oklch(24% 0.05 255);
-  --bg-2: oklch(30% 0.058 250);
-  --surface: oklch(20% 0.045 255);
-  --ink: oklch(92% 0.04 85);
-  --ink-2: oklch(76% 0.05 80);
-  --ink-3: oklch(58% 0.05 80);
-  --rule: oklch(38% 0.05 250);
-  --accent: oklch(80% 0.14 75);
-  --accent-soft: oklch(80% 0.14 75 / 0.18);
-  --selection: oklch(80% 0.14 75 / 0.3);
-  --grain: 0.04;
+  --bg: oklch(14% 0.016 260);
+  --bg-2: oklch(18% 0.02 260);
+  --surface: oklch(11% 0.012 260);
+  --ink: oklch(94% 0.01 110);
+  --ink-2: oklch(72% 0.014 110);
+  --ink-3: oklch(50% 0.012 110);
+  --rule: oklch(28% 0.016 260);
+  --accent: oklch(68% 0.2 155);
+  --accent-soft: oklch(68% 0.2 155 / 0.16);
+  --selection: oklch(68% 0.2 155 / 0.28);
+  --grain: 0.03;
 }

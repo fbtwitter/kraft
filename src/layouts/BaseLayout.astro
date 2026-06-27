@@ -48,29 +48,33 @@ function isActive(href: string) {
   <body>
     <div id="page-progress" aria-hidden="true" transition:persist></div>
     <div class="shell">
-      <!-- Floating pill header -->
-      <div class="hdr-float-wrap">
-        <header class="hdr-float">
-          <a class="brand" href="/">
-            <span>kraft</span>
+      <!-- Flat top bar header -->
+      <header class="hdr" transition:persist>
+        <div class="hdr-inner">
+          <a href="/" class="hdr-brand">
             <span class="dot" aria-hidden="true"></span>
+            kraft
           </a>
-          <span class="hdr-sep" aria-hidden="true"></span>
-          <div class="nav-shell">
-            <nav class="nav">
-              <a href="/" class={isActive('/') ? 'active' : ''}>lab</a>
-            </nav>
+          <nav class="hdr-nav">
+            <a href="/" class={isActive('/') ? 'active' : ''}>lab</a>
+          </nav>
+          <div class="hdr-actions">
+            <a
+              href="https://reza.gingerinc.dev"
+              class="hdr-btn"
+              aria-label="Personal site"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon name="lucide:arrow-up-right" size={13} />
+            </a>
+            <button class="hdr-btn" id="mode-toggle" aria-label="Toggle dark mode">
+              <Icon name="lucide:moon" id="icon-moon" size={13} />
+              <Icon name="lucide:sun" id="icon-sun" size={13} class="hidden" />
+            </button>
           </div>
-          <span class="hdr-sep" aria-hidden="true"></span>
-          <a href="https://reza.gingerinc.dev" class="mode-btn" aria-label="Personal site" target="_blank" rel="noopener noreferrer">
-            <Icon name="lucide:arrow-up-right" size={14} />
-          </a>
-          <button class="mode-btn" id="mode-toggle" aria-label="Toggle dark mode">
-            <Icon name="lucide:moon" id="icon-moon" size={14} />
-            <Icon name="lucide:sun" id="icon-sun" size={14} class="hidden" />
-          </button>
-        </header>
-      </div>
+        </div>
+      </header>
 
       <main id="main-content" class="page" transition:name="page-main">
         <slot />
@@ -79,45 +83,12 @@ function isActive(href: string) {
       <footer class="ftr">
         <div class="wrap">
           <div class="ftr-inner">
-            <div>
-              <h3>kraft</h3>
-              <p class="meta">A lab by <a href="https://reza.gingerinc.dev" class="hover:text-accent transition-colors">Reza Augusdi</a></p>
-            </div>
-            <div class="meta text-right">
-              © {new Date().getFullYear()} gingerinc
-            </div>
+            <span class="meta">kraft — a lab by <a href="https://reza.gingerinc.dev" style="color: var(--ink-2); transition: color 0.15s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--ink-2)'">Reza Augusdi</a></span>
+            <span class="meta">© {new Date().getFullYear()} gingerinc</span>
           </div>
         </div>
       </footer>
     </div>
-
-    <script>
-      // Compact header on scroll
-      let hdrFloat: HTMLElement | null = null;
-      let lastY = window.scrollY;
-      let hideTimer: number | null = null;
-
-      function show() {
-        if (hideTimer !== null) { clearTimeout(hideTimer); hideTimer = null; }
-        hdrFloat?.classList.remove('compact');
-      }
-      function scheduleHide() {
-        if (hideTimer !== null) return;
-        hideTimer = window.setTimeout(() => { hdrFloat?.classList.add('compact'); hideTimer = null; }, 200);
-      }
-
-      window.addEventListener('scroll', () => {
-        const y = window.scrollY;
-        if (y <= 60) { show(); lastY = y; return; }
-        if (y < lastY) show(); else if (y > lastY + 2) scheduleHide();
-        lastY = y;
-      }, { passive: true });
-
-      document.addEventListener('astro:page-load', () => {
-        hdrFloat = document.querySelector<HTMLElement>('.hdr-float');
-        lastY = window.scrollY;
-      });
-    </script>
 
     <script>
       // Dark mode toggle

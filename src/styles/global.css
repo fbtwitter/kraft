@@ -48,7 +48,7 @@ body {
   outline-offset: 3px;
 }
 
-/* ─── Grain overlay ──────────────────────────────────────────── */
+/* ─── Subtle grain ───────────────────────────────────────────── */
 body::before {
   content: "";
   position: fixed;
@@ -61,48 +61,6 @@ body::before {
 }
 html[data-mode="dark"] body::before {
   mix-blend-mode: screen;
-  opacity: calc(var(--grain) * 1.2);
-}
-
-/* ─── Langit atmospheric sky layer ──────────────────────────── */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 50% at 75% 18%, var(--accent-soft) 0%, transparent 60%),
-    radial-gradient(
-      ellipse 60% 40% at 15% 95%,
-      color-mix(in oklab, var(--accent) 8%, transparent) 0%,
-      transparent 65%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--accent) 6%, var(--bg)) 0%,
-      var(--bg) 45%,
-      var(--bg-2) 100%
-    );
-}
-html[data-mode="dark"] body::after {
-  background:
-    radial-gradient(
-      ellipse 70% 45% at 78% 22%,
-      color-mix(in oklab, var(--accent) 22%, transparent) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 90% 60% at 10% 100%,
-      color-mix(in oklab, var(--accent) 10%, transparent) 0%,
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--accent) 5%, var(--bg)) 0%,
-      var(--bg) 40%,
-      oklch(18% 0.04 255) 100%
-    );
 }
 
 @layer components {
@@ -123,28 +81,20 @@ html[data-mode="dark"] body::after {
     touch-action: manipulation;
   }
 
-  /* ─── Typography ─────────────────────────────────────────────── */
+  /* ─── Typography ──────────────────────────────────────────── */
   .display {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-style: var(--display-italic);
     letter-spacing: var(--display-letter);
-    line-height: 1.02;
+    line-height: 1.05;
   }
-  .mono {
-    font-family: var(--font-mono);
-  }
-  .meta {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
+  .mono  { font-family: var(--font-mono); }
+  .meta  { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
   .muted { color: var(--ink-2); }
   .fade  { color: var(--ink-3); }
 
-  /* ─── Layout shell ───────────────────────────────────────────── */
+  /* ─── Layout shell ────────────────────────────────────────── */
   .shell {
     min-height: 100dvh;
     display: flex;
@@ -157,263 +107,211 @@ html[data-mode="dark"] body::after {
     padding: 0 clamp(20px, 4vw, 56px);
   }
 
-  /* ─── Floating pill header ───────────────────────────────────── */
-  .hdr-float-wrap {
+  /* ─── Header — flat top bar (not a pill) ─────────────────── */
+  .hdr {
     position: sticky;
     top: 0;
     z-index: 50;
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in oklab, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.2s ease;
+  }
+  .hdr-inner {
     display: flex;
-    justify-content: center;
-    padding: 16px;
-    pointer-events: none;
-  }
-  .hdr-float {
-    pointer-events: auto;
-    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 10px 7px 14px;
-    background: color-mix(in oklab, var(--surface) 65%, transparent);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    border: 1px solid color-mix(in oklab, var(--rule) 80%, transparent);
-    border-radius: 999px;
-    box-shadow:
-      0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent) inset,
-      0 12px 32px -18px color-mix(in oklab, var(--ink) 40%, transparent);
-    max-width: calc(100vw - 32px);
-    overflow: hidden;
+    gap: 0;
+    height: 52px;
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 56px);
   }
-  .hdr-float .brand {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    font-family: var(--font-display);
-    font-style: var(--display-italic);
-    font-size: 17px;
-    letter-spacing: -0.01em;
-    padding: 0 6px 0 2px;
+  .hdr-brand {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 20px;
+    border-right: 1px solid var(--rule);
+    height: 100%;
   }
-  .hdr-float .brand .dot {
-    width: 6px;
-    height: 6px;
+  .hdr-brand .dot {
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--accent);
-    display: inline-block;
-    transform: translateY(-1px);
-    animation: pulse 2.4s ease-out infinite;
+    flex-shrink: 0;
+    animation: blink-dot 3s ease-in-out infinite;
   }
-  .hdr-sep {
-    width: 1px;
-    align-self: stretch;
-    margin: 6px 4px;
-    background: color-mix(in oklab, var(--rule) 80%, transparent);
-    transition: opacity 0.25s ease, margin 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1);
+  @keyframes blink-dot {
+    0%, 90%, 100% { opacity: 1; }
+    45% { opacity: 0.3; }
   }
-  .hdr-float .nav-shell {
+  .hdr-nav {
     display: flex;
-    max-width: 600px;
-    overflow: hidden;
-    transition: max-width 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease;
+    align-items: center;
+    height: 100%;
+    padding-left: 4px;
+    flex: 1;
   }
-  .hdr-float .nav { display: flex; gap: 2px; }
-  .hdr-float.compact .nav-shell { max-width: 0; opacity: 0; pointer-events: none; }
-  .hdr-float.compact .hdr-sep { opacity: 0; width: 0; margin: 0; }
-  .hdr-float .nav a {
+  .hdr-nav a {
     font-family: var(--font-mono);
-    font-size: 12.5px;
-    letter-spacing: 0.02em;
-    color: var(--ink-2);
-    padding: 9px 11px;
-    border-radius: 999px;
-    user-select: none;
-    transition: color 0.2s ease, background 0.2s ease;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    padding: 0 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--rule);
+    transition: color 0.15s ease, background 0.15s ease;
   }
-  .hdr-float .nav a:hover,
-  .hdr-float .nav a:active { color: var(--ink); background: color-mix(in oklab, var(--ink) 6%, transparent); }
-  .hdr-float .nav a.active { color: var(--ink); background: color-mix(in oklab, var(--accent) 12%, transparent); }
-  .hdr-float .nav a.active::before { content: "/"; color: var(--accent); margin-right: 1px; }
-  .hdr-float .mode-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
+  .hdr-nav a:hover  { color: var(--ink); background: var(--bg-2); }
+  .hdr-nav a.active { color: var(--accent); }
+  .hdr-nav a.active::before { content: "▸ "; font-size: 8px; margin-right: 2px; }
+  .hdr-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    height: 100%;
+    border-left: 1px solid var(--rule);
+  }
+  .hdr-btn {
+    width: 52px;
+    height: 100%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink-2);
-    border: 1px solid color-mix(in oklab, var(--rule) 80%, transparent);
-    transition: all 0.2s ease;
-    background: transparent;
-    user-select: none;
+    color: var(--ink-3);
+    border-left: 1px solid var(--rule);
+    transition: color 0.15s ease, background 0.15s ease;
   }
-  .hdr-float .mode-btn:hover,
-  .hdr-float .mode-btn:active { color: var(--ink); border-color: var(--ink-3); background: color-mix(in oklab, var(--ink) 6%, transparent); }
+  .hdr-btn:first-child { border-left: none; }
+  .hdr-btn:hover { color: var(--ink); background: var(--bg-2); }
 
-  @media (max-width: 720px) {
-    .hdr-float { padding: 6px 8px; gap: 2px; }
-    .hdr-float .nav-shell { flex: 1; min-width: 0; max-width: none; }
-    .hdr-float .nav { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; touch-action: pan-x; }
-    .hdr-float .nav::-webkit-scrollbar { display: none; }
-    .hdr-float .nav a { padding: 10px; font-size: 12px; white-space: nowrap; }
-  }
-
-  /* ─── Footer ─────────────────────────────────────────────────── */
+  /* ─── Footer ──────────────────────────────────────────────── */
   .ftr {
     margin-top: auto;
-    padding: 56px 0 40px;
     border-top: 1px solid var(--rule);
+    padding: 32px 0;
   }
   .ftr-inner {
     display: flex;
-    flex-wrap: wrap;
-    gap: 32px 56px;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-end;
-  }
-  .ftr h3 {
-    font-family: var(--font-display);
-    font-style: var(--display-italic);
-    font-weight: var(--display-weight);
-    font-size: clamp(28px, 6vw, 44px);
-    margin: 0 0 12px;
-    line-height: 0.95;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
-  /* ─── Navigation progress bar ───────────────────────────────── */
+  /* ─── Navigation progress bar ─────────────────────────────── */
   #page-progress {
     position: fixed; top: 0; left: 0;
-    height: 2px; width: 0%;
+    height: 1px; width: 0%;
     background: var(--accent);
-    box-shadow: 0 0 6px color-mix(in oklab, var(--accent) 50%, transparent);
     z-index: 9999; pointer-events: none;
     opacity: 0; transition: none;
   }
   #page-progress.loading { opacity: 1; width: 75%; transition: width 0.6s cubic-bezier(0.1,0.7,0.3,1); }
-  #page-progress.done { width: 100%; opacity: 0; transition: width 0.12s ease, opacity 0.25s ease 0.08s; }
+  #page-progress.done    { width: 100%; opacity: 0; transition: width 0.12s ease, opacity 0.25s ease 0.08s; }
 
-  /* ─── Page transitions ───────────────────────────────────────── */
+  /* ─── Page transitions ────────────────────────────────────── */
   @keyframes pageIn {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(3px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes pageFadeOut {
-    to { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 0; }
   }
   ::view-transition-old(root) { display: none; }
   ::view-transition-new(root) { animation: none; }
-  ::view-transition-old(page-main) { animation: pageFadeOut 0.12s ease-out both; }
-  ::view-transition-new(page-main) { animation: pageIn 0.22s ease-out both; }
+  ::view-transition-old(page-main) { animation: pageFadeOut 0.1s ease-out both; }
+  ::view-transition-new(page-main) { animation: pageIn 0.2s ease-out both; }
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-old(page-main),
     ::view-transition-new(page-main) { animation: none; }
   }
 
-  /* ─── Pulse ──────────────────────────────────────────────────── */
-  @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 60%, transparent); }
-    70%  { box-shadow: 0 0 0 12px transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-  }
-
-  /* ─── Index list rows ────────────────────────────────────────── */
+  /* ─── Index list rows ─────────────────────────────────────── */
   .idx { border-top: 1px solid var(--rule); }
   .idx-row {
-    padding: 30px 0;
+    padding: 24px 0;
     border-bottom: 1px solid var(--rule);
     text-decoration: none;
     color: inherit;
     display: block;
+    transition: background 0.15s ease;
   }
   .idx-row:last-child { border-bottom: 0; }
   .idx-row .ttl {
     font-family: var(--font-display);
     font-style: var(--display-italic);
     font-weight: var(--display-weight);
-    font-size: clamp(20px, 2.2vw, 28px);
-    line-height: 1.4;
-    letter-spacing: -0.01em;
-    transition: color 0.2s;
+    font-size: clamp(18px, 2vw, 24px);
+    letter-spacing: var(--display-letter);
+    line-height: 1.3;
+    transition: color 0.15s;
   }
-  .idx-row:hover .ttl,
-  .idx-row:active .ttl { color: var(--accent); }
+  .idx-row:hover .ttl { color: var(--accent); }
   .idx-row .sub { color: var(--ink-2); font-size: 14px; line-height: 1.55; margin-top: 4px; }
 
-  /* ─── Cards ──────────────────────────────────────────────────── */
-  .card {
-    display: block;
-    padding: 24px 24px 20px;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    color: inherit;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in oklab, var(--accent) 35%, var(--rule));
-    box-shadow: 0 12px 24px -16px color-mix(in oklab, var(--accent) 50%, transparent);
-  }
-  .card:active {
-    transform: scale(0.99);
-    border-color: color-mix(in oklab, var(--accent) 35%, var(--rule));
-  }
-
-  /* ─── Topic chips ────────────────────────────────────────────── */
+  /* ─── Chip tags ───────────────────────────────────────────── */
   .chip {
     font-family: var(--font-mono);
-    font-size: 11.5px;
+    font-size: 10.5px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 4px 10px;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
     border: 1px solid var(--rule);
-    border-radius: 999px;
     color: var(--ink-3);
     background: transparent;
   }
 
-  /* ─── Buttons ────────────────────────────────────────────────── */
+  /* ─── Buttons ─────────────────────────────────────────────── */
   .btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: 12.5px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 11px 18px;
-    min-height: 44px;
+    letter-spacing: 0.08em;
+    padding: 10px 16px;
+    min-height: 40px;
     border: 1px solid var(--ink);
-    border-radius: 999px;
     color: var(--ink);
     user-select: none;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
-  .btn:hover,
-  .btn:active { background: var(--ink); color: var(--bg); }
-  .btn.ghost { border-color: var(--rule); color: var(--ink-2); }
-  .btn.ghost:hover,
-  .btn.ghost:active { color: var(--ink); border-color: var(--ink); background: transparent; }
+  .btn:hover  { background: var(--ink); color: var(--bg); }
+  .btn.ghost  { border-color: var(--rule); color: var(--ink-2); }
+  .btn.ghost:hover { color: var(--ink); border-color: var(--ink-3); background: var(--bg-2); }
 
   .back-link {
     font-family: var(--font-mono);
-    font-size: 12.5px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--ink-3);
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 10px 0;
-    margin-bottom: 14px;
+    margin-bottom: 20px;
     min-height: 40px;
+    transition: color 0.15s ease;
   }
-  .back-link:hover,
-  .back-link:active { color: var(--accent); }
+  .back-link:hover { color: var(--accent); }
 
-  /* ─── Experiment sandbox ─────────────────────────────────────── */
+  /* ─── Experiment sandbox ──────────────────────────────────── */
   .experiment-stage {
     background: var(--surface);
     border: 1px solid var(--rule);
-    border-radius: 10px;
+    border-left: 3px solid var(--accent);
     padding: clamp(24px, 4vw, 48px);
     margin: 24px 0 32px;
     min-height: 280px;
