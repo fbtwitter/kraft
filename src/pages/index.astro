@@ -7,29 +7,29 @@ const experiments = (await getCollection('experiments', ({ data }) => !data.draf
 ---
 
 <BaseLayout title="kraft">
-  <div class="wrap" style="padding-top: clamp(56px, 10vw, 112px); padding-bottom: clamp(56px, 8vw, 96px);">
-    <div style="margin-bottom: clamp(40px, 6vw, 72px);">
-      <p class="meta" style="margin-bottom: 16px;">gingerinc / lab</p>
-      <h1 class="display" style="font-size: clamp(56px, 10vw, 120px); margin: 0 0 20px;">kraft</h1>
-      <p class="muted" style="font-size: clamp(17px, 1.8vw, 20px); line-height: 1.6; max-width: 540px;">
+  <div class="wrap py-16 md:py-24 lg:py-32">
+    <div class="mb-12 md:mb-16">
+      <p class="meta mb-4">gingerinc / lab</p>
+      <h1 class="display text-[clamp(56px,10vw,120px)] mb-5">kraft</h1>
+      <p class="muted text-[clamp(17px,1.8vw,20px)] leading-relaxed max-w-[540px]">
         A public lab of interactive demos and UI experiments.<br />
-        Play with them — and leave <span style="color: var(--ink);">feedback</span>.
+        Play with them — and leave <span class="text-ink">feedback</span>.
       </p>
     </div>
 
     {experiments.length === 0 ? (
-      <p class="fade mono" style="font-size: 14px;">No experiments yet. Check back soon.</p>
+      <p class="fade mono text-sm">No experiments yet. Check back soon.</p>
     ) : (
       <div class="idx">
         {experiments.map((exp) => (
           <a href={`/experiments/${exp.id}`} class="idx-row">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;">
+            <div class="flex justify-between items-baseline gap-4 flex-wrap">
               <span class="ttl">{exp.data.title}</span>
               <span class="meta">{exp.data.publishedAt.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
             </div>
             <p class="sub">{exp.data.description}</p>
             {exp.data.tags.length > 0 && (
-              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
+              <div class="flex gap-1.5 flex-wrap mt-2.5">
                 {exp.data.tags.map((tag: string) => <span class="chip">{tag}</span>)}
               </div>
             )}

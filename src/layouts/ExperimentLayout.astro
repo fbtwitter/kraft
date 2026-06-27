@@ -15,18 +15,18 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="wrap" style="padding-top: clamp(40px, 6vw, 72px); padding-bottom: clamp(40px, 6vw, 72px);">
+  <div class="wrap py-10 md:py-16 lg:py-20">
     <a href="/" class="back-link">
       <Icon name="lucide:arrow-left" size={14} />
       all experiments
     </a>
 
-    <p class="meta" style="margin-bottom: 10px;">experiment</p>
-    <h1 class="display" style="font-size: clamp(36px, 6vw, 64px); margin: 0 0 12px;">{title}</h1>
-    <p class="muted" style="font-size: 17px; line-height: 1.6; margin: 0 0 20px;">{description}</p>
+    <p class="meta mb-2.5">experiment</p>
+    <h1 class="display text-[clamp(36px,6vw,64px)] mb-3">{title}</h1>
+    <p class="muted text-[17px] leading-relaxed mb-5">{description}</p>
 
     {tags.length > 0 && (
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;">
+      <div class="flex gap-2 flex-wrap mb-8">
         {tags.map((tag) => <span class="chip">{tag}</span>)}
       </div>
     )}
