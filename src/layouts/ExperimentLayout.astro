@@ -14,7 +14,13 @@ const { title, description, tags = [], slug, githubRepo = 'fbtwitter/kraft' } = 
 const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft.gingerinc.dev/experiments/${slug})\n\n**My feedback:**\n`)}`;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogType="article"
+  tags={tags}
+  canonical={`https://kraft.gingerinc.dev/experiments/${slug}`}
+>
   <div class="wrap py-10 md:py-16 lg:py-20">
     <a href="/" class="back-link">
       <Icon name="lucide:arrow-left" size={14} />

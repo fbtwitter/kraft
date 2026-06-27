@@ -7,18 +7,46 @@ import { Icon } from 'astro-icon/components';
 interface Props {
   title?: string;
   description?: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  canonical?: string;
+  tags?: string[];
 }
 
 const {
   title = 'kraft',
-  description = 'A public lab of interactive demos and UI experiments.',
+  description = 'A public lab of interactive demos and UI experiments by Reza Augusdi.',
+  ogType = 'website',
+  ogImage = '/og.png',
+  canonical,
+  tags = [],
 } = Astro.props;
+
+const SITE = 'https://kraft.gingerinc.dev';
+const SITE_NAME = 'kraft';
+
+const resolvedTitle = title === 'kraft' ? 'kraft' : `${title} · kraft`;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE).href;
+const ogImageUrl = new URL(ogImage, SITE).href;
 
 const pathname = Astro.url.pathname;
 
 function isActive(href: string) {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
 }
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': ogType === 'article' ? 'SoftwareApplication' : 'WebSite',
+  name: resolvedTitle,
+  url: canonicalUrl,
+  description,
+  author: {
+    '@type': 'Person',
+    name: 'Reza Fauzi Augusdi',
+    url: 'https://reza.gingerinc.dev',
+  },
+};
 ---
 
 <!doctype html>
@@ -27,9 +55,36 @@ function isActive(href: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary -->
+    <title>{resolvedTitle}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {tags.length > 0 && <meta name="keywords" content={tags.join(', ')} />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={resolvedTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={resolvedTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:creator" content="@rzaugusdi" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title === 'kraft' ? 'kraft' : `${title} · kraft`}</title>
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <Font cssVariable="--font-display" preload />
     <Font cssVariable="--font-body" preload />
@@ -110,18 +165,15 @@ function isActive(href: string) {
           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       }
 
-      // Re-apply mode after every page swap (header persists, html attrs reset)
       document.addEventListener('astro:after-swap', () => {
         document.documentElement.setAttribute('data-mode', getMode());
       });
 
-      // Apply icons + wire button once per page load
       document.addEventListener('astro:page-load', () => {
         applyMode(getMode());
 
         const btn = document.getElementById('mode-toggle');
         if (!btn) return;
-        // Clone to remove any previously stacked listeners
         const fresh = btn.cloneNode(true) as HTMLElement;
         btn.replaceWith(fresh);
         fresh.addEventListener('click', () => {
@@ -133,7 +185,6 @@ function isActive(href: string) {
     </script>
 
     <script>
-      // Navigation progress bar
       document.addEventListener('astro:before-preparation', () => {
         const bar = document.getElementById('page-progress');
         if (!bar) return;
