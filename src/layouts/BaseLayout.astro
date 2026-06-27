@@ -70,7 +70,7 @@ function isActive(href: string) {
             </a>
             <button class="hdr-btn" id="mode-toggle" aria-label="Toggle dark mode">
               <Icon name="lucide:moon" id="icon-moon" size={13} />
-              <Icon name="lucide:sun" id="icon-sun" size={13} class="hidden" />
+              <Icon name="lucide:sun" id="icon-sun" size={13} style="display:none" />
             </button>
           </div>
         </div>
@@ -91,33 +91,40 @@ function isActive(href: string) {
     </div>
 
     <script>
-      // Dark mode toggle
       function applyMode(mode: string) {
         document.documentElement.setAttribute('data-mode', mode);
         const moon = document.getElementById('icon-moon');
         const sun  = document.getElementById('icon-sun');
+        if (!moon || !sun) return;
         if (mode === 'dark') {
-          if (moon) moon.style.display = 'none';
-          if (sun)  sun.style.display  = 'inline';
+          moon.style.display = 'none';
+          sun.style.display  = 'block';
         } else {
-          if (moon) moon.style.display = 'inline';
-          if (sun)  sun.style.display  = 'none';
+          moon.style.display = 'block';
+          sun.style.display  = 'none';
         }
       }
 
+      function getMode() {
+        return localStorage.getItem('kraft-mode') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      }
+
+      // Re-apply mode after every page swap (header persists, html attrs reset)
       document.addEventListener('astro:after-swap', () => {
-        const stored = localStorage.getItem('kraft-mode');
-        const mode = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-mode', mode);
+        document.documentElement.setAttribute('data-mode', getMode());
       });
 
+      // Apply icons + wire button once per page load
       document.addEventListener('astro:page-load', () => {
-        const btn = document.getElementById('mode-toggle');
-        const stored = localStorage.getItem('kraft-mode');
-        const systemMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        applyMode(stored || systemMode);
+        applyMode(getMode());
 
-        btn?.addEventListener('click', () => {
+        const btn = document.getElementById('mode-toggle');
+        if (!btn) return;
+        // Clone to remove any previously stacked listeners
+        const fresh = btn.cloneNode(true) as HTMLElement;
+        btn.replaceWith(fresh);
+        fresh.addEventListener('click', () => {
           const next = document.documentElement.getAttribute('data-mode') === 'dark' ? 'light' : 'dark';
           localStorage.setItem('kraft-mode', next);
           applyMode(next);
