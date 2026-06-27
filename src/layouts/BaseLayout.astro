@@ -1,0 +1,26 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'A public lab of interactive demos and UI experiments.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} · kraft</title>
+  </head>
+  <body class="bg-white text-gray-900 font-sans min-h-screen">
+    <header class="border-b px-6 py-4 flex items-center justify-between">
+      <a href="/" class="font-bold text-lg tracking-tight">kraft</a>
+      <a href="https://reza.gingerinc.xyz" class="text-sm text-gray-500 hover:text-gray-900">by reza</a>
+    </header>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+      <slot />
+    </main>
+  </body>
+</html>

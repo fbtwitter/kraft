@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const experiments = (await getCollection('experiments', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+---
+
+<BaseLayout title="kraft">
+  <h1 class="text-3xl font-bold mb-2">kraft</h1>
+  <p class="text-gray-600 mb-12">A public lab of interactive demos and UI experiments. Play with them — and leave feedback.</p>
+
+  {experiments.length === 0 ? (
+    <p class="text-gray-400">No experiments yet. Coming soon.</p>
+  ) : (
+    <ul class="space-y-4">
+      {experiments.map((exp) => (
+        <li>
+          <a href={`/experiments/${exp.slug}`} class="group block border rounded-lg p-5 hover:bg-gray-50 transition-colors">
+            <h2 class="font-semibold group-hover:underline">{exp.data.title}</h2>
+            <p class="text-sm text-gray-600 mt-1">{exp.data.description}</p>
+            <div class="flex gap-2 mt-3">
+              {exp.data.tags.map((tag: string) => (
+                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded">{tag}</span>
+              ))}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>
