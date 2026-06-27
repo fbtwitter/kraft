@@ -35,14 +35,25 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
       <slot />
     </div>
 
-    <a
-      href={feedbackUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="btn ghost"
-    >
-      Give feedback on GitHub
-      <Icon name="lucide:arrow-up-right" size={14} />
-    </a>
+    <div class="flex gap-3 flex-wrap">
+      <a
+        href={feedbackUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn ghost"
+      >
+        Give feedback on GitHub
+        <Icon name="lucide:arrow-up-right" size={14} />
+      </a>
+      <a
+        href={`/experiments/${slug}/island`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn ghost"
+      >
+        Full screen
+        <Icon name="lucide:arrow-up-right" size={14} />
+      </a>
+    </div>
   </div>
 </BaseLayout>

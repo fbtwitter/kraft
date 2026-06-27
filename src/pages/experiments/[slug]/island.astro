@@ -1,0 +1,34 @@
+---
+import { getCollection, render } from 'astro:content';
+import '../../../styles/global.css';
+
+export async function getStaticPaths() {
+  const experiments = await getCollection('experiments', ({ data }) => !data.draft);
+  return experiments.map((exp) => ({
+    params: { slug: exp.id },
+    props: { exp },
+  }));
+}
+
+const { exp } = Astro.props;
+const { Content } = await render(exp);
+---
+
+<!doctype html>
+<html lang="en" data-mode="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{exp.data.title} · island</title>
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('kraft-mode');
+        const mode = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-mode', mode);
+      })();
+    </script>
+  </head>
+  <body class="min-h-dvh flex items-center justify-center p-8">
+    <Content />
+  </body>
+</html>
