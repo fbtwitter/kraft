@@ -7,26 +7,35 @@ const experiments = (await getCollection('experiments', ({ data }) => !data.draf
 ---
 
 <BaseLayout title="kraft">
-  <h1 class="text-3xl font-bold mb-2">kraft</h1>
-  <p class="text-gray-600 mb-12">A public lab of interactive demos and UI experiments. Play with them — and leave feedback.</p>
+  <div class="wrap" style="padding-top: clamp(56px, 10vw, 112px); padding-bottom: clamp(56px, 8vw, 96px);">
+    <div style="margin-bottom: clamp(40px, 6vw, 72px);">
+      <p class="meta" style="margin-bottom: 16px;">gingerinc / lab</p>
+      <h1 class="display" style="font-size: clamp(56px, 10vw, 120px); margin: 0 0 20px;">kraft</h1>
+      <p class="muted" style="font-size: clamp(17px, 1.8vw, 20px); line-height: 1.6; max-width: 540px;">
+        A public lab of interactive demos and UI experiments.<br />
+        Play with them — and leave <span style="color: var(--ink);">feedback</span>.
+      </p>
+    </div>
 
-  {experiments.length === 0 ? (
-    <p class="text-gray-400">No experiments yet. Coming soon.</p>
-  ) : (
-    <ul class="space-y-4">
-      {experiments.map((exp) => (
-        <li>
-          <a href={`/experiments/${exp.slug}`} class="group block border rounded-lg p-5 hover:bg-gray-50 transition-colors">
-            <h2 class="font-semibold group-hover:underline">{exp.data.title}</h2>
-            <p class="text-sm text-gray-600 mt-1">{exp.data.description}</p>
-            <div class="flex gap-2 mt-3">
-              {exp.data.tags.map((tag: string) => (
-                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded">{tag}</span>
-              ))}
+    {experiments.length === 0 ? (
+      <p class="fade mono" style="font-size: 14px;">No experiments yet. Check back soon.</p>
+    ) : (
+      <div class="idx">
+        {experiments.map((exp) => (
+          <a href={`/experiments/${exp.id}`} class="idx-row">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;">
+              <span class="ttl">{exp.data.title}</span>
+              <span class="meta">{exp.data.publishedAt.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
             </div>
+            <p class="sub">{exp.data.description}</p>
+            {exp.data.tags.length > 0 && (
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
+                {exp.data.tags.map((tag: string) => <span class="chip">{tag}</span>)}
+              </div>
+            )}
           </a>
-        </li>
-      ))}
-    </ul>
-  )}
+        ))}
+      </div>
+    )}
+  </div>
 </BaseLayout>

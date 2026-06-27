@@ -1,26 +1,174 @@
 ---
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import { Icon } from 'astro-icon/components';
+
 interface Props {
-  title: string;
+  title?: string;
   description?: string;
 }
-const { title, description = 'A public lab of interactive demos and UI experiments.' } = Astro.props;
+
+const {
+  title = 'kraft',
+  description = 'A public lab of interactive demos and UI experiments.',
+} = Astro.props;
+
+const pathname = Astro.url.pathname;
+
+function isActive(href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="light">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <title>{title} · kraft</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title === 'kraft' ? 'kraft' : `${title} · kraft`}</title>
+
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-mono" preload />
+    <ClientRouter />
+
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('kraft-mode');
+        const mode = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-mode', mode);
+      })();
+    </script>
   </head>
-  <body class="bg-white text-gray-900 font-sans min-h-screen">
-    <header class="border-b px-6 py-4 flex items-center justify-between">
-      <a href="/" class="font-bold text-lg tracking-tight">kraft</a>
-      <a href="https://reza.gingerinc.xyz" class="text-sm text-gray-500 hover:text-gray-900">by reza</a>
-    </header>
-    <main class="max-w-4xl mx-auto px-6 py-12">
-      <slot />
-    </main>
+
+  <body>
+    <div id="page-progress" aria-hidden="true" transition:persist></div>
+    <div class="shell">
+      <!-- Floating pill header -->
+      <div class="hdr-float-wrap">
+        <header class="hdr-float">
+          <a class="brand" href="/">
+            <span>kraft</span>
+            <span class="dot" aria-hidden="true"></span>
+          </a>
+          <span class="hdr-sep" aria-hidden="true"></span>
+          <div class="nav-shell">
+            <nav class="nav">
+              <a href="/" class={isActive('/') ? 'active' : ''}>lab</a>
+            </nav>
+          </div>
+          <span class="hdr-sep" aria-hidden="true"></span>
+          <a href="https://reza.gingerinc.dev" class="mode-btn" aria-label="Personal site" target="_blank" rel="noopener noreferrer">
+            <Icon name="lucide:arrow-up-right" size={14} />
+          </a>
+          <button class="mode-btn" id="mode-toggle" aria-label="Toggle dark mode">
+            <Icon name="lucide:moon" id="icon-moon" size={14} />
+            <Icon name="lucide:sun" id="icon-sun" size={14} class="hidden" />
+          </button>
+        </header>
+      </div>
+
+      <main id="main-content" class="page" transition:name="page-main">
+        <slot />
+      </main>
+
+      <footer class="ftr">
+        <div class="wrap">
+          <div class="ftr-inner">
+            <div>
+              <h3>kraft</h3>
+              <p class="meta">A lab by <a href="https://reza.gingerinc.dev" class="hover:text-accent transition-colors">Reza Augusdi</a></p>
+            </div>
+            <div class="meta text-right">
+              © {new Date().getFullYear()} gingerinc
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Compact header on scroll
+      let hdrFloat: HTMLElement | null = null;
+      let lastY = window.scrollY;
+      let hideTimer: number | null = null;
+
+      function show() {
+        if (hideTimer !== null) { clearTimeout(hideTimer); hideTimer = null; }
+        hdrFloat?.classList.remove('compact');
+      }
+      function scheduleHide() {
+        if (hideTimer !== null) return;
+        hideTimer = window.setTimeout(() => { hdrFloat?.classList.add('compact'); hideTimer = null; }, 200);
+      }
+
+      window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        if (y <= 60) { show(); lastY = y; return; }
+        if (y < lastY) show(); else if (y > lastY + 2) scheduleHide();
+        lastY = y;
+      }, { passive: true });
+
+      document.addEventListener('astro:page-load', () => {
+        hdrFloat = document.querySelector<HTMLElement>('.hdr-float');
+        lastY = window.scrollY;
+      });
+    </script>
+
+    <script>
+      // Dark mode toggle
+      function applyMode(mode: string) {
+        document.documentElement.setAttribute('data-mode', mode);
+        const moon = document.getElementById('icon-moon');
+        const sun  = document.getElementById('icon-sun');
+        if (mode === 'dark') {
+          if (moon) moon.style.display = 'none';
+          if (sun)  sun.style.display  = 'inline';
+        } else {
+          if (moon) moon.style.display = 'inline';
+          if (sun)  sun.style.display  = 'none';
+        }
+      }
+
+      document.addEventListener('astro:after-swap', () => {
+        const stored = localStorage.getItem('kraft-mode');
+        const mode = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-mode', mode);
+      });
+
+      document.addEventListener('astro:page-load', () => {
+        const btn = document.getElementById('mode-toggle');
+        const stored = localStorage.getItem('kraft-mode');
+        const systemMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        applyMode(stored || systemMode);
+
+        btn?.addEventListener('click', () => {
+          const next = document.documentElement.getAttribute('data-mode') === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('kraft-mode', next);
+          applyMode(next);
+        });
+      });
+    </script>
+
+    <script>
+      // Navigation progress bar
+      document.addEventListener('astro:before-preparation', () => {
+        const bar = document.getElementById('page-progress');
+        if (!bar) return;
+        bar.classList.remove('done');
+        bar.classList.add('loading');
+      });
+      document.addEventListener('astro:page-load', () => {
+        const bar = document.getElementById('page-progress');
+        if (!bar) return;
+        bar.classList.remove('loading');
+        bar.classList.add('done');
+        setTimeout(() => bar.classList.remove('done'), 400);
+      });
+    </script>
   </body>
 </html>

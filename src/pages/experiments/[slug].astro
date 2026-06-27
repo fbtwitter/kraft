@@ -5,7 +5,7 @@ import ExperimentLayout from '../../layouts/ExperimentLayout.astro';
 export async function getStaticPaths() {
   const experiments = await getCollection('experiments', ({ data }) => !data.draft);
   return experiments.map((exp) => ({
-    params: { slug: exp.slug },
+    params: { slug: exp.id },
     props: { exp },
   }));
 }
@@ -17,7 +17,8 @@ const { Content } = await render(exp);
 <ExperimentLayout
   title={exp.data.title}
   description={exp.data.description}
-  slug={exp.slug}
+  tags={exp.data.tags}
+  slug={exp.id}
 >
   <Content />
 </ExperimentLayout>

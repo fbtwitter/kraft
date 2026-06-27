@@ -1,33 +1,48 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { Icon } from 'astro-icon/components';
 
 interface Props {
   title: string;
   description: string;
-  githubRepo?: string;
+  tags?: string[];
   slug: string;
+  githubRepo?: string;
 }
-const { title, description, githubRepo = 'rzaugusdi/kraft', slug } = Astro.props;
-const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=Feedback: ${encodeURIComponent(title)}&body=**Experiment:** [${title}](https://kraft.reza.gingerinc.xyz/experiments/${slug})%0A%0A**My feedback:**%0A`;
+
+const { title, description, tags = [], slug, githubRepo = 'fbtwitter/kraft' } = Astro.props;
+const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft.gingerinc.dev/experiments/${slug})\n\n**My feedback:**\n`)}`;
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="mb-8">
-    <a href="/" class="text-sm text-gray-500 hover:text-gray-900">← all experiments</a>
-  </div>
-  <h1 class="text-3xl font-bold mb-2">{title}</h1>
-  <p class="text-gray-600 mb-8">{description}</p>
+  <div class="wrap" style="padding-top: clamp(40px, 6vw, 72px); padding-bottom: clamp(40px, 6vw, 72px);">
+    <a href="/" class="back-link">
+      <Icon name="lucide:arrow-left" size={14} />
+      all experiments
+    </a>
 
-  <div class="border rounded-lg p-6 mb-8 bg-gray-50">
-    <slot />
-  </div>
+    <p class="meta" style="margin-bottom: 10px;">experiment</p>
+    <h1 class="display" style="font-size: clamp(36px, 6vw, 64px); margin: 0 0 12px;">{title}</h1>
+    <p class="muted" style="font-size: 17px; line-height: 1.6; margin: 0 0 20px;">{description}</p>
 
-  <a
-    href={feedbackUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-flex items-center gap-2 text-sm border rounded px-4 py-2 hover:bg-gray-50 transition-colors"
-  >
-    Give feedback on GitHub →
-  </a>
+    {tags.length > 0 && (
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;">
+        {tags.map((tag) => <span class="chip">{tag}</span>)}
+      </div>
+    )}
+
+    <div class="experiment-stage">
+      <slot />
+    </div>
+
+    <a
+      href={feedbackUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn ghost"
+    >
+      Give feedback on GitHub
+      <Icon name="lucide:arrow-up-right" size={14} />
+    </a>
+  </div>
 </BaseLayout>
