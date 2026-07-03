@@ -151,6 +151,8 @@ html[data-mode="dark"] body::before {
     padding-right: 20px;
     border-right: 1px solid var(--rule);
     height: 100%;
+    margin-left: -20px;
+    padding-left: 20px;
   }
   .hdr-brand .dot {
     width: 7px;
@@ -209,6 +211,8 @@ html[data-mode="dark"] body::before {
     margin-left: auto;
     height: 100%;
     border-left: 1px solid var(--rule);
+    margin-right: -20px;
+    padding-right: 20px;
   }
   .hdr-btn {
     width: 52px;
