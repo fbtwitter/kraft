@@ -51,7 +51,7 @@ export default function MockLoginChild({ subtitle, actions }: Props) {
         observed behavior rather than a live request.
       </div>
 
-      <div className="max-h-[210px] min-h-[130px] overflow-y-auto bg-black px-4 py-3 text-[11.5px] leading-relaxed text-white">
+      <div className="max-h-52.5 min-h-32.5 overflow-y-auto bg-black px-4 py-3 text-[11.5px] leading-relaxed text-white">
         {log.length === 0 ? (
           <span className="text-white/40">
             click a button above — every action is logged here
