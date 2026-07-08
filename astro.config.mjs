@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 
 export default defineConfig({
-  site: "https://kraft.gingerinc.dev",
+  site: "https://kraft-rzaugusdi.vercel.app",
   integrations: [
     icon({
       include: {

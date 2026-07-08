@@ -17,7 +17,7 @@ const {
   slug,
   githubRepo = "fbtwitter/kraft",
 } = Astro.props;
-const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft.gingerinc.dev/experiments/${slug})\n\n**My feedback:**\n`)}`;
+const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft-rzaugusdi.vercel.app/experiments/${slug})\n\n**My feedback:**\n`)}`;
 ---
 
 <BaseLayout
@@ -25,7 +25,7 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
   description={description}
   ogType="article"
   tags={tags}
-  canonical={`https://kraft.gingerinc.dev/experiments/${slug}`}
+  canonical={`https://kraft-rzaugusdi.vercel.app/experiments/${slug}`}
 >
   <div class="wrap py-10 md:py-16 lg:py-20">
     <a href="/" class="back-link">
