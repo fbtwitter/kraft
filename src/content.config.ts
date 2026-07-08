@@ -11,6 +11,7 @@ const experiments = defineCollection({
     publishedAt: z.coerce.date(),
     draft: z.boolean().default(false),
     usesKraftFonts: z.boolean().default(false),
+    tipsUrl: z.string().url().optional(),
   }),
 });
 

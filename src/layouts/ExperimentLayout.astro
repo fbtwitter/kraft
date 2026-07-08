@@ -8,6 +8,7 @@ interface Props {
   tags?: string[];
   slug: string;
   githubRepo?: string;
+  tipsUrl?: string;
 }
 
 const {
@@ -16,6 +17,7 @@ const {
   tags = [],
   slug,
   githubRepo = "fbtwitter/kraft",
+  tipsUrl,
 } = Astro.props;
 const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft-rzaugusdi.vercel.app/experiments/${slug})\n\n**My feedback:**\n`)}`;
 ---
@@ -70,6 +72,14 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
         Full screen
         <Icon name="lucide:arrow-up-right" size={14} />
       </a>
+      {
+        tipsUrl && (
+          <a href={tipsUrl} target="_blank" rel="noopener noreferrer" class="btn ghost">
+            Tips: how to fix this
+            <Icon name="lucide:arrow-up-right" size={14} />
+          </a>
+        )
+      }
     </div>
   </div>
 </BaseLayout>
