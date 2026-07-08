@@ -1,50 +1,52 @@
 ---
-import '../styles/global.css';
-import { Font } from 'astro:assets';
-import { ClientRouter } from 'astro:transitions';
-import { Icon } from 'astro-icon/components';
+import "../styles/global.css";
+import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
+import { Icon } from "astro-icon/components";
 
 interface Props {
   title?: string;
   description?: string;
-  ogType?: 'website' | 'article';
+  ogType?: "website" | "article";
   ogImage?: string;
   canonical?: string;
   tags?: string[];
 }
 
 const {
-  title = 'kraft',
-  description = 'A public lab of interactive demos and UI experiments by Reza Augusdi.',
-  ogType = 'website',
-  ogImage = '/og.png',
+  title = "kraft",
+  description = "A public lab of interactive demos and UI experiments by Reza Augusdi.",
+  ogType = "website",
+  ogImage = "/og.png",
   canonical,
   tags = [],
 } = Astro.props;
 
-const SITE = 'https://kraft.gingerinc.dev';
-const SITE_NAME = 'kraft';
+const SITE = "https://kraft.gingerinc.dev";
+const SITE_NAME = "kraft";
 
-const resolvedTitle = title === 'kraft' ? 'kraft' : `${title} · kraft`;
+const resolvedTitle = title === "kraft" ? "kraft" : `${title} · kraft`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE).href;
 const ogImageUrl = new URL(ogImage, SITE).href;
 
 const pathname = Astro.url.pathname;
 
 function isActive(href: string) {
-  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
+  return href === "/"
+    ? pathname === "/"
+    : pathname === href || pathname.startsWith(href + "/");
 }
 
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': ogType === 'article' ? 'SoftwareApplication' : 'WebSite',
+  "@context": "https://schema.org",
+  "@type": ogType === "article" ? "SoftwareApplication" : "WebSite",
   name: resolvedTitle,
   url: canonicalUrl,
   description,
   author: {
-    '@type': 'Person',
-    name: 'Reza Fauzi Augusdi',
-    url: 'https://reza.gingerinc.dev',
+    "@type": "Person",
+    name: "Reza Fauzi Augusdi",
+    url: "https://reza.gingerinc.dev",
   },
 };
 ---
@@ -53,14 +55,17 @@ const jsonLd = {
 <html lang="en" data-mode="light">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="generator" content={Astro.generator} />
 
     <!-- Primary -->
     <title>{resolvedTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    {tags.length > 0 && <meta name="keywords" content={tags.join(', ')} />}
+    {tags.length > 0 && <meta name="keywords" content={tags.join(", ")} />}
 
     <!-- Open Graph -->
     <meta property="og:type" content={ogType} />
@@ -93,9 +98,13 @@ const jsonLd = {
 
     <script is:inline>
       (function () {
-        const stored = localStorage.getItem('kraft-mode');
-        const mode = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-mode', mode);
+        const stored = localStorage.getItem("kraft-mode");
+        const mode =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        document.documentElement.setAttribute("data-mode", mode);
       })();
     </script>
   </head>
@@ -111,7 +120,7 @@ const jsonLd = {
             kraft
           </a>
           <nav class="hdr-nav">
-            <a href="/" class={isActive('/') ? 'active' : ''}>lab</a>
+            <a href="/" class={isActive("/") ? "active" : ""}>lab</a>
           </nav>
           <div class="hdr-actions">
             <a
@@ -123,9 +132,18 @@ const jsonLd = {
             >
               <Icon name="lucide:arrow-up-right" size={13} />
             </a>
-            <button class="hdr-btn" id="mode-toggle" aria-label="Toggle dark mode">
+            <button
+              class="hdr-btn"
+              id="mode-toggle"
+              aria-label="Toggle dark mode"
+            >
               <Icon name="lucide:moon" id="icon-moon" size={13} />
-              <Icon name="lucide:sun" id="icon-sun" size={13} style="display:none" />
+              <Icon
+                name="lucide:sun"
+                id="icon-sun"
+                size={13}
+                style="display:none"
+              />
             </button>
           </div>
         </div>
@@ -138,8 +156,8 @@ const jsonLd = {
       <footer class="ftr">
         <div class="wrap">
           <div class="ftr-inner">
-            <span class="meta">kraft — a lab by <a href="https://reza.gingerinc.dev" class="text-ink-2 hover:text-accent transition-colors duration-150">Reza Augusdi</a></span>
-            <span class="meta">© {new Date().getFullYear()} gingerinc</span>
+            <span class="meta">kraft</span>
+            <span class="meta">© {new Date().getFullYear()} Reza Augusdi</span>
           </div>
         </div>
       </footer>
@@ -147,56 +165,63 @@ const jsonLd = {
 
     <script>
       function applyMode(mode: string) {
-        document.documentElement.setAttribute('data-mode', mode);
-        const moon = document.getElementById('icon-moon');
-        const sun  = document.getElementById('icon-sun');
+        document.documentElement.setAttribute("data-mode", mode);
+        const moon = document.getElementById("icon-moon");
+        const sun = document.getElementById("icon-sun");
         if (!moon || !sun) return;
-        if (mode === 'dark') {
-          moon.style.display = 'none';
-          sun.style.display  = 'block';
+        if (mode === "dark") {
+          moon.style.display = "none";
+          sun.style.display = "block";
         } else {
-          moon.style.display = 'block';
-          sun.style.display  = 'none';
+          moon.style.display = "block";
+          sun.style.display = "none";
         }
       }
 
       function getMode() {
-        return localStorage.getItem('kraft-mode') ||
-          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        return (
+          localStorage.getItem("kraft-mode") ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light")
+        );
       }
 
-      document.addEventListener('astro:after-swap', () => {
-        document.documentElement.setAttribute('data-mode', getMode());
+      document.addEventListener("astro:after-swap", () => {
+        document.documentElement.setAttribute("data-mode", getMode());
       });
 
-      document.addEventListener('astro:page-load', () => {
+      document.addEventListener("astro:page-load", () => {
         applyMode(getMode());
 
-        const btn = document.getElementById('mode-toggle');
+        const btn = document.getElementById("mode-toggle");
         if (!btn) return;
         const fresh = btn.cloneNode(true) as HTMLElement;
         btn.replaceWith(fresh);
-        fresh.addEventListener('click', () => {
-          const next = document.documentElement.getAttribute('data-mode') === 'dark' ? 'light' : 'dark';
-          localStorage.setItem('kraft-mode', next);
+        fresh.addEventListener("click", () => {
+          const next =
+            document.documentElement.getAttribute("data-mode") === "dark"
+              ? "light"
+              : "dark";
+          localStorage.setItem("kraft-mode", next);
           applyMode(next);
         });
       });
     </script>
 
     <script>
-      document.addEventListener('astro:before-preparation', () => {
-        const bar = document.getElementById('page-progress');
+      document.addEventListener("astro:before-preparation", () => {
+        const bar = document.getElementById("page-progress");
         if (!bar) return;
-        bar.classList.remove('done');
-        bar.classList.add('loading');
+        bar.classList.remove("done");
+        bar.classList.add("loading");
       });
-      document.addEventListener('astro:page-load', () => {
-        const bar = document.getElementById('page-progress');
+      document.addEventListener("astro:page-load", () => {
+        const bar = document.getElementById("page-progress");
         if (!bar) return;
-        bar.classList.remove('loading');
-        bar.classList.add('done');
-        setTimeout(() => bar.classList.remove('done'), 400);
+        bar.classList.remove("loading");
+        bar.classList.add("done");
+        setTimeout(() => bar.classList.remove("done"), 400);
       });
     </script>
   </body>

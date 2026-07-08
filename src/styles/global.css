@@ -59,6 +59,7 @@ body::before {
   opacity: var(--grain);
   mix-blend-mode: multiply;
 }
+
 html[data-mode="dark"] body::before {
   mix-blend-mode: screen;
 }
@@ -162,6 +163,7 @@ html[data-mode="dark"] body::before {
     flex-shrink: 0;
     animation: blink-dot 3s ease-in-out infinite;
   }
+
   @keyframes blink-dot {
     0%,
     90%,
@@ -172,6 +174,7 @@ html[data-mode="dark"] body::before {
       opacity: 0.3;
     }
   }
+
   .hdr-nav {
     display: flex;
     align-items: center;

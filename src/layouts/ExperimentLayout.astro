@@ -1,6 +1,6 @@
 ---
-import BaseLayout from './BaseLayout.astro';
-import { Icon } from 'astro-icon/components';
+import BaseLayout from "./BaseLayout.astro";
+import { Icon } from "astro-icon/components";
 
 interface Props {
   title: string;
@@ -10,7 +10,13 @@ interface Props {
   githubRepo?: string;
 }
 
-const { title, description, tags = [], slug, githubRepo = 'fbtwitter/kraft' } = Astro.props;
+const {
+  title,
+  description,
+  tags = [],
+  slug,
+  githubRepo = "fbtwitter/kraft",
+} = Astro.props;
 const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeURIComponent(`Feedback: ${title}`)}&body=${encodeURIComponent(`**Experiment:** [${title}](https://kraft.gingerinc.dev/experiments/${slug})\n\n**My feedback:**\n`)}`;
 ---
 
@@ -28,20 +34,24 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
     </a>
 
     <p class="meta mb-2.5">experiment</p>
-    <h1 class="display text-[clamp(36px,6vw,64px)] mb-3">{title}</h1>
-    <p class="muted text-[17px] leading-relaxed mb-5">{description}</p>
+    <h1 class="display mb-3 text-[clamp(36px,6vw,64px)]">{title}</h1>
+    <p class="muted mb-5 text-[17px] leading-relaxed">{description}</p>
 
-    {tags.length > 0 && (
-      <div class="flex gap-2 flex-wrap mb-8">
-        {tags.map((tag) => <span class="chip">{tag}</span>)}
-      </div>
-    )}
+    {
+      tags.length > 0 && (
+        <div class="mb-8 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span class="chip">{tag}</span>
+          ))}
+        </div>
+      )
+    }
 
     <div class="experiment-stage">
       <slot />
     </div>
 
-    <div class="flex gap-3 flex-wrap">
+    <div class="flex flex-wrap gap-3">
       <a
         href={feedbackUrl}
         target="_blank"

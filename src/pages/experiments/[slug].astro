@@ -1,9 +1,12 @@
 ---
-import { getCollection, render } from 'astro:content';
-import ExperimentLayout from '../../layouts/ExperimentLayout.astro';
+import { getCollection, render } from "astro:content";
+import ExperimentLayout from "../../layouts/ExperimentLayout.astro";
 
 export async function getStaticPaths() {
-  const experiments = await getCollection('experiments', ({ data }) => !data.draft);
+  const experiments = await getCollection(
+    "experiments",
+    ({ data }) => !data.draft,
+  );
   return experiments.map((exp) => ({
     params: { slug: exp.id },
     props: { exp },

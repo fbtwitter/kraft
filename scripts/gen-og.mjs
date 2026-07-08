@@ -1,22 +1,22 @@
-import { Resvg } from '@resvg/resvg-js';
-import { writeFileSync, mkdirSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { Resvg } from "@resvg/resvg-js";
+import { writeFileSync, mkdirSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const OUT = join(__dir, '../public/og.png');
+const OUT = join(__dir, "../public/og.png");
 
 const W = 1200;
 const H = 630;
 
 // Langit-inspired kraft palette
-const BG       = '#f7f7f5';
-const SURFACE  = '#ffffff';
-const INK      = '#1a1d2e';
-const INK2     = '#5a5f78';
-const INK3     = '#8a8fa8';
-const ACCENT   = '#1a8a52'; // kraft green
-const RULE     = '#dde0e8';
+const BG = "#f7f7f5";
+const SURFACE = "#ffffff";
+const INK = "#1a1d2e";
+const INK2 = "#5a5f78";
+const INK3 = "#8a8fa8";
+const ACCENT = "#1a8a52"; // kraft green
+const RULE = "#dde0e8";
 
 const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
@@ -61,7 +61,7 @@ const svg = `
 </svg>
 `.trim();
 
-const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: W } });
+const resvg = new Resvg(svg, { fitTo: { mode: "width", value: W } });
 const png = resvg.render().asPng();
 writeFileSync(OUT, png);
 console.log(`✓ og.png written to public/og.png (${png.byteLength} bytes)`);

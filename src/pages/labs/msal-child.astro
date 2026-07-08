@@ -1,0 +1,48 @@
+---
+import MockLoginChild from "../../islands/MockLoginChild.tsx";
+import "../../styles/island.css";
+
+const actions = [
+  {
+    key: "redirect",
+    label: "Redirect",
+    lines: [
+      "→ navigating top-level window to Entra ID login (simulated)",
+      "✓ works even inside an iframe — but the whole page leaves the frame",
+    ],
+  },
+  {
+    key: "popup",
+    label: "Popup",
+    lines: [
+      "→ window.open() → Entra ID login (simulated)",
+      "✓ succeeds inside an iframe: a popup is a separate top-level browsing context",
+    ],
+  },
+  {
+    key: "silent",
+    label: "Silent (ssoSilent)",
+    lines: [
+      "→ ssoSilent, prompt=none, via hidden iframe (simulated)",
+      "✓ allowed by Microsoft only when an active SSO session already exists — fails silently otherwise",
+    ],
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mock msal login · kraft</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body class="flex min-h-dvh items-center justify-center p-8">
+    <MockLoginChild
+      client:load
+      subtitle="mock login page · direct msal → entra id (no broker)"
+      actions={actions}
+    />
+  </body>
+</html>

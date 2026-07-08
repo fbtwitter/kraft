@@ -1,0 +1,48 @@
+---
+import MockLoginChild from "../../islands/MockLoginChild.tsx";
+import "../../styles/island.css";
+
+const actions = [
+  {
+    key: "redirect",
+    label: "Redirect",
+    lines: [
+      "→ navigating top-level window to Cognito Hosted UI (simulated)",
+      "✓ works even inside an iframe — but the whole page leaves the frame",
+    ],
+  },
+  {
+    key: "popup",
+    label: "Popup",
+    lines: [
+      "→ window.open() → Cognito Hosted UI (simulated)",
+      "✓ succeeds inside an iframe: a popup is a separate top-level browsing context",
+    ],
+  },
+  {
+    key: "silent",
+    label: "Silent (iframe)",
+    lines: [
+      "→ prompt=none request via hidden iframe (simulated)",
+      "✓ allowed by Microsoft only when an active SSO session already exists — fails silently otherwise",
+    ],
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mock cognito login · kraft</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body class="flex min-h-dvh items-center justify-center p-8">
+    <MockLoginChild
+      client:load
+      subtitle="mock login page · cognito hosted ui → entra id"
+      actions={actions}
+    />
+  </body>
+</html>

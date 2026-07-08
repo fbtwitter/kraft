@@ -1,0 +1,11 @@
+---
+title: Can you iframe it?
+description: Load any URL into a real iframe and see whether it renders or gets blocked by X-Frame-Options / CSP frame-ancestors — grew out of a POC testing whether a Cognito-fronted Microsoft login survives being framed.
+tags: [react, auth, iframe, security]
+publishedAt: 2026-07-08
+usesKraftFonts: true
+---
+
+import IframeEmbedTester from "../../islands/IframeEmbedTester.tsx";
+
+<IframeEmbedTester client:load />

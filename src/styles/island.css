@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Self-owned tokens for standalone /labs pages — intentionally similar to kraft's
+   look (../theme.css) but defined independently, not imported from it. */
+:root {
+  --lab-bg: oklch(97% 0.006 110);
+  --lab-bg-2: oklch(93% 0.01 110);
+  --lab-ink: oklch(20% 0.02 260);
+  --lab-ink-2: oklch(42% 0.018 260);
+  --lab-ink-3: oklch(60% 0.014 260);
+  --lab-rule: oklch(88% 0.01 260);
+}

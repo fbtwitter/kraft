@@ -1,41 +1,52 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
 
-const experiments = (await getCollection('experiments', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+const experiments = (
+  await getCollection("experiments", ({ data }) => !data.draft)
+).sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 ---
 
 <BaseLayout title="kraft">
   <div class="wrap py-16 md:py-24 lg:py-32">
     <div class="mb-12 md:mb-16">
       <p class="meta mb-4">gingerinc / lab</p>
-      <h1 class="display text-[clamp(56px,10vw,120px)] mb-5">kraft</h1>
-      <p class="muted text-[clamp(17px,1.8vw,20px)] leading-relaxed max-w-[540px]">
+      <h1 class="display mb-5 text-[clamp(56px,10vw,120px)]">kraft</h1>
+      <p class="muted text-[clamp(17px,1.8vw,20px)] leading-relaxed">
         A public lab of interactive demos and UI experiments.<br />
         Play with them — and leave <span class="text-ink">feedback</span>.
       </p>
     </div>
 
-    {experiments.length === 0 ? (
-      <p class="fade mono text-sm">No experiments yet. Check back soon.</p>
-    ) : (
-      <div class="idx">
-        {experiments.map((exp) => (
-          <a href={`/experiments/${exp.id}`} class="idx-row">
-            <div class="flex justify-between items-baseline gap-4 flex-wrap">
-              <span class="ttl">{exp.data.title}</span>
-              <span class="meta">{exp.data.publishedAt.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-            </div>
-            <p class="sub">{exp.data.description}</p>
-            {exp.data.tags.length > 0 && (
-              <div class="flex gap-1.5 flex-wrap mt-2.5">
-                {exp.data.tags.map((tag: string) => <span class="chip">{tag}</span>)}
+    {
+      experiments.length === 0 ? (
+        <p class="fade mono text-sm">No experiments yet. Check back soon.</p>
+      ) : (
+        <div class="idx">
+          {experiments.map((exp) => (
+            <a href={`/experiments/${exp.id}`} class="idx-row">
+              <div class="flex flex-wrap items-baseline justify-between gap-4">
+                <span class="ttl">{exp.data.title}</span>
+                <span class="meta">
+                  {exp.data.publishedAt.toLocaleDateString("en", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
               </div>
-            )}
-          </a>
-        ))}
-      </div>
-    )}
+              <p class="sub">{exp.data.description}</p>
+              {exp.data.tags.length > 0 && (
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  {exp.data.tags.map((tag: string) => (
+                    <span class="chip">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      )
+    }
   </div>
 </BaseLayout>
