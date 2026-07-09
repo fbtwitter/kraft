@@ -8,6 +8,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
+import "@fontsource/passion-one/400.css";
 
 // Template = a genuinely different type treatment (font-family/weight/size,
 // the gap rhythm between text blocks, whether an eyebrow label exists at
@@ -16,14 +17,13 @@ import "@fontsource/inter/700.css";
 type TemplateId = "prose" | "statement" | "stat";
 type TextColor = "light" | "dark";
 
-// Variant = content ordering and placement within a template — never a
-// typography change.
-type ContentOrder = "title-first" | "body-first";
+// Variant = content placement within a template — never a typography
+// change. Content *order* isn't a variant concern anymore: it's carried
+// directly by the order of Slide.content itself.
 type Position = "top" | "center" | "bottom";
 type Align = "left" | "center";
 
 interface SlideVariant {
-  order?: ContentOrder; // default "title-first"
   position?: Position; // default "center"
   align?: Align; // default "center"
 }
@@ -40,13 +40,32 @@ interface SlideLayout {
   variant?: SlideVariant;
 }
 
+// Mirrors RawContentBlock's styles, collapsing image_url/image_parameter into
+// one "image" style — both resolve to a plain URL at the INIT boundary (see
+// normalizeRawSlide), so nothing downstream needs to know which one it was.
+// Order is meaningful: Slide.content renders in array order, and a style may
+// repeat (e.g. body, title, body, cta) — templates must not assume a fixed
+// title-then-body shape.
+// a run of text, or a run resolved from a "{key}" placeholder (e.g.
+// "{nama_toko}" inside "hari ini {nama_toko} sangat berprestasi") —
+// fromParameter runs render bold so only the dynamic part stands out
+export interface TextSegment {
+  text: string;
+  fromParameter?: boolean;
+}
+
+export type SlideBlock =
+  | { style: "title"; value: TextSegment[] }
+  | { style: "body"; value: TextSegment[] }
+  | { style: "image"; value: string } // resolved image URL
+  | { style: "cta"; value: { label: string; url: string } };
+
 export interface Slide {
   layout: SlideLayout;
   eyebrow?: string; // our own addition for the sample slides — a real host doesn't send this
-  title: string;
-  body?: string;
-  cta?: { label: string; url: string };
+  content: SlideBlock[];
   shareable?: boolean; // defaults to true; hides the share button when a slide sets this false
+  pointerHint?: string; // the "tap to continue" hint text; hidden entirely when unset
 }
 
 export interface InitPayload {
@@ -54,18 +73,30 @@ export interface InitPayload {
 }
 
 // the shape a real embedding host actually sends (see the ayo-wrapped POC) —
-// snake_case, nested content, an opaque template id the host doesn't know
-// the meaning of, and no concept of "eyebrow" at all. normalizeRawSlide
-// below is what translates this into our internal Slide shape.
+// snake_case, an ordered array of typed content blocks, an opaque template
+// id the host doesn't know the meaning of, and no concept of "eyebrow" at
+// all. normalizeRawSlide below is what translates this into our internal
+// Slide shape.
+export type RawContentBlock =
+  | { style: "title" | "body"; order: number; value: string }
+  // an inline image within the content stack — distinct from the slide-level
+  // background_image. image_url's value is a direct URL; image_parameter's
+  // value is a "{key}" placeholder resolved against the slide's parameter
+  // object into a URL (see resolveParameterPlaceholder below)
+  | { style: "image_url" | "image_parameter"; order: number; value: string }
+  | { style: "cta"; order: number; value: { label: string; url: string } };
+
 export interface RawSlide {
-  // "template" is our TemplateId, chosen by the host; "variant" is the
-  // host's own label for which content variant this is — unrelated to our
-  // internal SlideVariant (order/position/align), just a passthrough string
-  retailer_wrapped_template: { template: string; variant?: string };
+  // an opaque id the host assigns (e.g. "template_1") — unrelated to our
+  // TemplateId strings, so it always falls back to "prose" below. Different
+  // host versions send this as either a bare string or a {template, variant}
+  // object — both are handled at the INIT boundary in normalizeRawSlide.
+  retailer_wrapped_template: string | { template: string; variant?: string };
   background_image?: string;
   shareable?: 0 | 1;
-  content: { title: string; body?: string };
-  cta?: { label: string; url: string };
+  // the "tap to continue" hint text itself — shown only when non-empty
+  pointer?: string;
+  content: RawContentBlock[];
   parameter?: Record<string, string>;
 }
 
@@ -75,11 +106,89 @@ export interface RawInitPayload {
 
 const TEMPLATE_IDS: TemplateId[] = ["prose", "statement", "stat"];
 
+// the host's own variant ids, several of which can mean the same position
+const VARIANT_POSITION: Record<string, Position> = {
+  "1": "center",
+  "2": "center",
+  "3": "center",
+  "4": "top",
+  "5": "center",
+  "6": "center",
+  "7": "center",
+  "8": "center",
+};
+
+// image_parameter's value is always exactly one "{key}" placeholder,
+// resolved whole against the slide's parameter object into an image URL
+function resolveImageParameter(
+  value: string,
+  parameter?: Record<string, string>,
+): string {
+  const match = value.match(/^\{(.+)\}$/);
+  return match ? (parameter?.[match[1]] ?? "") : value;
+}
+
+// title/body values can mix literal text with inline "{key}" placeholders
+// (e.g. "hari ini {nama_toko} sangat berprestasi") — each placeholder is
+// resolved against the parameter object and split into its own segment, so
+// only that resolved run renders bold, not the whole title/body
+function parseTextSegments(
+  raw: string,
+  parameter?: Record<string, string>,
+): TextSegment[] {
+  const segments: TextSegment[] = [];
+  const pattern = /\{([^{}]+)\}/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(raw))) {
+    if (match.index > lastIndex) {
+      segments.push({ text: raw.slice(lastIndex, match.index) });
+    }
+    const resolved = parameter?.[match[1]];
+    if (resolved) segments.push({ text: resolved, fromParameter: true });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < raw.length) {
+    segments.push({ text: raw.slice(lastIndex) });
+  }
+  return segments;
+}
+
 function normalizeRawSlide(raw: RawSlide): Slide {
-  const requested = raw.retailer_wrapped_template?.template;
-  const template = TEMPLATE_IDS.includes(requested as TemplateId)
-    ? (requested as TemplateId)
+  const rawTemplate = raw.retailer_wrapped_template;
+  const templateId =
+    typeof rawTemplate === "string" ? rawTemplate : rawTemplate.template;
+  const variantId =
+    typeof rawTemplate === "string" ? undefined : rawTemplate.variant;
+
+  const template = TEMPLATE_IDS.includes(templateId as TemplateId)
+    ? (templateId as TemplateId)
     : "prose"; // unrecognized/malformed template id — fall back to prose
+  const position = variantId ? VARIANT_POSITION[variantId] : undefined;
+
+  const content: SlideBlock[] = [...raw.content]
+    .sort((a, b) => a.order - b.order)
+    .flatMap((b): SlideBlock[] => {
+      switch (b.style) {
+        case "title":
+        case "body": {
+          const segments = parseTextSegments(b.value, raw.parameter);
+          // no segments (e.g. the whole value was one unresolved parameter)
+          // renders nothing rather than a blank title/paragraph in its place
+          return segments.length ? [{ style: b.style, value: segments }] : [];
+        }
+        case "image_url":
+          return [{ style: "image", value: b.value }];
+        case "image_parameter": {
+          const resolved = resolveImageParameter(b.value, raw.parameter);
+          // an empty/unresolved parameter renders no image rather than a
+          // broken <img> in its place
+          return resolved ? [{ style: "image", value: resolved }] : [];
+        }
+        case "cta":
+          return [{ style: "cta", value: b.value }];
+      }
+    });
 
   return {
     layout: {
@@ -87,11 +196,11 @@ function normalizeRawSlide(raw: RawSlide): Slide {
       background: raw.background_image
         ? { imageUrl: raw.background_image }
         : { className: "bg-neutral-900" },
+      variant: position ? { position } : undefined,
     },
-    title: raw.content.title,
-    body: raw.content.body,
-    cta: raw.cta,
+    content,
     shareable: raw.shareable !== 0,
+    pointerHint: raw.pointer || undefined,
   };
 }
 
@@ -177,8 +286,14 @@ const SAMPLE_SLIDES: Slide[] = [
       variant: { position: "bottom", align: "left" },
     },
     eyebrow: "kraft · recap",
-    title: "Your year in experiments",
-    body: "A quick look back at what shipped in the lab.",
+    content: [
+      { style: "title", value: [{ text: "Your year in experiments" }] },
+      {
+        style: "body",
+        value: [{ text: "A quick look back at what shipped in the lab." }],
+      },
+    ],
+    pointerHint: "tap right to continue",
   },
   {
     layout: {
@@ -188,14 +303,29 @@ const SAMPLE_SLIDES: Slide[] = [
       },
     },
     eyebrow: "shipped",
-    title: "5",
-    body: "Interactive experiments published so far — from counters to iframe testers.",
+    content: [
+      { style: "title", value: [{ text: "5" }] },
+      {
+        style: "body",
+        value: [
+          {
+            text: "Interactive experiments published so far — from counters to iframe testers.",
+          },
+        ],
+      },
+    ],
   },
   {
     layout: { template: "prose", background: { className: "bg-neutral-900" } },
     eyebrow: "favorite tag",
-    title: "“react”",
-    body: "Most experiments reach for an island before anything else.",
+    // deliberately body-before-title, to exercise arbitrary block order
+    content: [
+      {
+        style: "body",
+        value: [{ text: "Most experiments reach for an island before anything else." }],
+      },
+      { style: "title", value: [{ text: "“react”" }] },
+    ],
   },
   {
     layout: {
@@ -204,7 +334,7 @@ const SAMPLE_SLIDES: Slide[] = [
       textColor: "dark",
     },
     eyebrow: "keep building",
-    title: "More weird stuff coming",
+    content: [{ style: "title", value: [{ text: "More weird stuff coming" }] }],
   },
   {
     layout: {
@@ -216,9 +346,21 @@ const SAMPLE_SLIDES: Slide[] = [
       variant: { position: "bottom", align: "left" },
     },
     eyebrow: "kraft",
-    title: "Thanks for playing",
-    body: "This player is itself an experiment — swipe, tap, or let it autoplay.",
-    cta: { label: "View source", url: "https://github.com/fbtwitter/kraft" },
+    content: [
+      { style: "title", value: [{ text: "Thanks for playing" }] },
+      {
+        style: "body",
+        value: [
+          {
+            text: "This player is itself an experiment — swipe, tap, or let it autoplay.",
+          },
+        ],
+      },
+      {
+        style: "cta",
+        value: { label: "View source", url: "https://github.com/fbtwitter/kraft" },
+      },
+    ],
   },
 ];
 
@@ -256,7 +398,7 @@ function CTAButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className={`mt-4 inline-block w-fit rounded-full px-5 py-2.5 font-mono text-xs tracking-wider uppercase transition-colors ${
+      className={`block w-full rounded-[24px] px-5 py-3 text-center font-['Inter'] text-base font-semibold transition-colors ${
         variant === "dark"
           ? "bg-black text-white hover:bg-black/80"
           : "bg-white text-black hover:bg-white/85"
@@ -278,6 +420,33 @@ const ALIGN_CLASS: Record<Align, string> = {
   center: "items-center text-center",
 };
 
+// shared across every "title"-style block render (Prose, Statement, Stat's
+// numeral) so the design spec's font/size stays in one place
+const TITLE_CLASS = "font-['Passion_One'] text-[64px] leading-none font-normal";
+
+// shared across every "image"-style block render
+const IMAGE_CLASS = "mx-auto max-h-[280px] max-w-[280px] w-full rounded-lg object-cover";
+
+// caps the content stack's line length regardless of how wide the slide
+// itself renders; centered within its parent's position/align flex rules.
+// p-4 (16px all sides) is the content wrapper's own padding — templates no
+// longer add their own horizontal padding on top of this.
+const CONTENT_CLASS = "flex w-full max-w-[380px] flex-col p-4";
+
+// renders a title/body block's segments — only the parameter-resolved runs
+// (e.g. "{nama_toko}") are wrapped bold, everything else stays inline text
+function renderSegments(segments: TextSegment[]) {
+  return segments.map((seg, i) =>
+    seg.fromParameter ? (
+      <strong key={i} className="font-bold">
+        {seg.text}
+      </strong>
+    ) : (
+      seg.text
+    ),
+  );
+}
+
 // a real photo (host-provided) draws over the frame with a scrim for text
 // legibility; className backgrounds (our own sample slides) don't need one
 function SlideBackdrop({ background }: { background: SlideBackground }) {
@@ -294,61 +463,67 @@ function SlideBackdrop({ background }: { background: SlideBackground }) {
   );
 }
 
-// eyebrow label + heading + optional body — the standard caption/quote slide
+// eyebrow label + an ordered stack of title/body/cta blocks — the standard
+// caption/quote slide. Blocks render in whatever order the slide gives them
+// (body, title, body, cta — anything), each styled by its own `style`.
 function Prose({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
   const { background, textColor = "light", variant = {} } = slide.layout;
-  const {
-    order = "title-first",
-    position = "center",
-    align = "center",
-  } = variant;
+  const { position = "center", align = "center" } = variant;
   const isDark = textColor === "dark";
-  const textClass = isDark ? "text-black" : "text-white";
-  const mutedClass = isDark ? "text-black/70" : "text-white/70";
   const eyebrowClass = isDark ? "text-black/50" : "text-white/50";
-
-  const title = (
-    <h2 key="title" className={`text-2xl font-medium ${textClass}`}>
-      {slide.title}
-    </h2>
-  );
-  const body = slide.body && (
-    <p
-      key="body"
-      className={`font-[Inter] text-sm leading-relaxed ${mutedClass}`}
-    >
-      {slide.body}
-    </p>
-  );
-  const blocks = order === "body-first" ? [body, title] : [title, body];
 
   return (
     <div
       ref={containerRef}
-      className={`relative flex h-full w-full flex-col gap-2 px-6 ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
+      className={`relative flex h-full w-full flex-col ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
     >
       <SlideBackdrop background={background} />
-      {slide.eyebrow && (
-        <p
-          className={`font-mono text-xs tracking-wider uppercase ${eyebrowClass}`}
-        >
-          {slide.eyebrow}
-        </p>
-      )}
-      {blocks}
-      {slide.cta && (
-        <CTAButton
-          {...slide.cta}
-          slideIndex={slideIndex}
-          variant={isDark ? "dark" : "light"}
-          onSend={onSend}
-        />
-      )}
+      <div className={`${CONTENT_CLASS} gap-4`}>
+        {slide.eyebrow && (
+          <p
+            className={`font-mono text-xs tracking-wider uppercase ${eyebrowClass}`}
+          >
+            {slide.eyebrow}
+          </p>
+        )}
+        {slide.content.map((block, i) => {
+          switch (block.style) {
+            case "title":
+              return (
+                <h2 key={i} className={`${TITLE_CLASS} text-white`}>
+                  {renderSegments(block.value)}
+                </h2>
+              );
+            case "body":
+              return (
+                <p
+                  key={i}
+                  className="font-[Inter] text-sm leading-relaxed text-white"
+                >
+                  {renderSegments(block.value)}
+                </p>
+              );
+            case "image":
+              return <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />;
+            case "cta":
+              return (
+                <CTAButton
+                  key={i}
+                  {...block.value}
+                  slideIndex={slideIndex}
+                  variant={isDark ? "dark" : "light"}
+                  onSend={onSend}
+                />
+              );
+          }
+        })}
+      </div>
     </div>
   );
 }
 
-// large bold headline, no eyebrow rhythm — for a single standalone statement
+// large bold headline, no eyebrow rhythm — for a single standalone
+// statement. Same ordered-block rendering as Prose, just its own typography.
 function Statement({
   slide,
   slideIndex,
@@ -356,80 +531,122 @@ function Statement({
   onSend,
 }: SlideCardProps) {
   const { background, textColor = "light", variant = {} } = slide.layout;
-  const {
-    order = "title-first",
-    position = "center",
-    align = "center",
-  } = variant;
+  const { position = "center", align = "center" } = variant;
   const isDark = textColor === "dark";
-  const textClass = isDark ? "text-black" : "text-white";
-  const mutedClass = isDark ? "text-black/70" : "text-white/70";
-
-  const title = (
-    <h2 key="title" className={`text-4xl leading-tight font-bold ${textClass}`}>
-      {slide.title}
-    </h2>
-  );
-  const body = slide.body && (
-    <p
-      key="body"
-      className={`font-[Inter] text-sm leading-relaxed ${mutedClass}`}
-    >
-      {slide.body}
-    </p>
-  );
-  const blocks = order === "body-first" ? [body, title] : [title, body];
 
   return (
     <div
       ref={containerRef}
-      className={`relative flex h-full w-full flex-col gap-4 px-8 ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
+      className={`relative flex h-full w-full flex-col ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
     >
       <SlideBackdrop background={background} />
-      {blocks}
-      {slide.cta && (
-        <CTAButton
-          {...slide.cta}
-          slideIndex={slideIndex}
-          variant={isDark ? "dark" : "light"}
-          onSend={onSend}
-        />
-      )}
+      <div className={`${CONTENT_CLASS} gap-4`}>
+        {slide.content.map((block, i) => {
+          switch (block.style) {
+            case "title":
+              return (
+                <h2 key={i} className={`${TITLE_CLASS} text-white`}>
+                  {renderSegments(block.value)}
+                </h2>
+              );
+            case "body":
+              return (
+                <p
+                  key={i}
+                  className="font-[Inter] text-sm leading-relaxed text-white"
+                >
+                  {renderSegments(block.value)}
+                </p>
+              );
+            case "image":
+              return <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />;
+            case "cta":
+              return (
+                <CTAButton
+                  key={i}
+                  {...block.value}
+                  slideIndex={slideIndex}
+                  variant={isDark ? "dark" : "light"}
+                  onSend={onSend}
+                />
+              );
+          }
+        })}
+      </div>
     </div>
   );
 }
 
 // giant isolated numeral/word above a caption panel — its own two-region
-// gap rhythm, always in this order, so it doesn't take a variant
+// gap rhythm, always in this order, so it doesn't take a variant. The first
+// "title" block in slide.content is the numeral; everything else (including
+// any later title blocks) flows into the panel below, in original order.
 function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
   const { background } = slide.layout;
+  const numeral = slide.content.find(
+    (b): b is Extract<SlideBlock, { style: "title" }> => b.style === "title",
+  );
+  const panelBlocks = numeral
+    ? slide.content.filter((b) => b !== numeral)
+    : slide.content;
+
   return (
     <div ref={containerRef} className="flex h-full w-full flex-col">
       <div
         className={`relative flex flex-1 items-center justify-center ${background.imageUrl ? "" : background.className}`}
       >
         <SlideBackdrop background={background} />
-        <span className="text-6xl font-bold text-white">{slide.title}</span>
+        {numeral && (
+          <div className={`${CONTENT_CLASS} items-center text-center`}>
+            <span className={`${TITLE_CLASS} text-white`}>
+              {renderSegments(numeral.value)}
+            </span>
+          </div>
+        )}
       </div>
-      <div className="flex flex-col gap-2 bg-black p-6">
-        {slide.eyebrow && (
-          <p className="font-mono text-xs tracking-wider text-white/50 uppercase">
-            {slide.eyebrow}
-          </p>
-        )}
-        {slide.body && (
-          <p className="font-[Inter] text-sm leading-relaxed text-white/80">
-            {slide.body}
-          </p>
-        )}
-        {slide.cta && (
-          <CTAButton
-            {...slide.cta}
-            slideIndex={slideIndex}
-            variant="light"
-            onSend={onSend}
-          />
-        )}
+      <div className="bg-black">
+        <div className={`${CONTENT_CLASS} mx-auto gap-4`}>
+          {slide.eyebrow && (
+            <p className="font-mono text-xs tracking-wider text-white/50 uppercase">
+              {slide.eyebrow}
+            </p>
+          )}
+          {panelBlocks.map((block, i) => {
+            switch (block.style) {
+              // a title block that isn't the numeral (e.g. a second title
+              // later in the sequence) reads as a bold caption line here
+              case "title":
+                return (
+                  <p key={i} className="text-base font-semibold text-white">
+                    {renderSegments(block.value)}
+                  </p>
+                );
+              case "body":
+                return (
+                  <p
+                    key={i}
+                    className="font-[Inter] text-sm leading-relaxed text-white"
+                  >
+                    {renderSegments(block.value)}
+                  </p>
+                );
+              case "image":
+                return (
+                  <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />
+                );
+              case "cta":
+                return (
+                  <CTAButton
+                    key={i}
+                    {...block.value}
+                    slideIndex={slideIndex}
+                    variant="light"
+                    onSend={onSend}
+                  />
+                );
+            }
+          })}
+        </div>
       </div>
     </div>
   );
@@ -590,7 +807,13 @@ export default function StoryPlayer() {
         msg?.type === "INIT" &&
         Array.isArray(msg.payload?.slides) &&
         msg.payload.slides.length > 0 &&
-        msg.payload.slides.every((s) => typeof s?.content?.title === "string")
+        msg.payload.slides.every(
+          (s) =>
+            Array.isArray(s?.content) &&
+            s.content.some(
+              (b) => b?.style === "title" && typeof b.value === "string",
+            ),
+        )
       ) {
         clearTimeout(timer);
         setSlides(msg.payload.slides.map(normalizeRawSlide));
@@ -796,10 +1019,10 @@ export default function StoryPlayer() {
           ))}
         </Swiper>
 
-        {showHint && (
+        {showHint && slides[activeIndex]?.pointerHint && (
           <div className="pointer-events-none absolute right-4 bottom-10 z-20">
             <div className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 font-mono text-xs text-white">
-              tap right to continue
+              {slides[activeIndex].pointerHint}
               <ChevronIcon />
             </div>
           </div>
