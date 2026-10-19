@@ -17,7 +17,7 @@ export default function Counter() {
       <span
         style={{
           fontFamily: "var(--font-mono)",
-          fontSize: "clamp(64px, 12vw, 120px)",
+          fontSize: "clamp(4rem, 12vw, 7.5rem)",
           fontWeight: 500,
           color: "var(--ink)",
           lineHeight: 1,
@@ -31,7 +31,7 @@ export default function Counter() {
           onClick={() => setCount((c) => c - 1)}
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: "20px",
+            fontSize: "1.25rem",
             width: "48px",
             height: "48px",
             border: "1px solid var(--rule)",
@@ -56,7 +56,7 @@ export default function Counter() {
           onClick={() => setCount(0)}
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: "11px",
+            fontSize: "0.875rem",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
             padding: "0 18px",
@@ -83,7 +83,7 @@ export default function Counter() {
           onClick={() => setCount((c) => c + 1)}
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: "20px",
+            fontSize: "1.25rem",
             width: "48px",
             height: "48px",
             border: "1px solid var(--rule)",

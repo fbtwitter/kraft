@@ -11,6 +11,7 @@ interface Props {
   ogImage?: string;
   canonical?: string;
   tags?: string[];
+  includeOutfitFont?: boolean;
 }
 
 const {
@@ -20,6 +21,7 @@ const {
   ogImage = "/og.png",
   canonical,
   tags = [],
+  includeOutfitFont = false,
 } = Astro.props;
 
 const SITE = "https://kraft-rzaugusdi.vercel.app";
@@ -94,6 +96,7 @@ const jsonLd = {
     <Font cssVariable="--font-display" preload />
     <Font cssVariable="--font-body" preload />
     <Font cssVariable="--font-mono" preload />
+    {includeOutfitFont && <Font cssVariable="--font-outfit" preload />}
     <ClientRouter />
 
     <script is:inline>
@@ -132,7 +135,9 @@ const jsonLd = {
             <button
               class="hdr-btn"
               id="mode-toggle"
-              aria-label="Toggle dark mode"
+              aria-label="Dark mode"
+              aria-pressed="false"
+              title="Dark mode is off"
             >
               <Icon name="lucide:moon" id="icon-moon" size={13} />
               <Icon
@@ -163,8 +168,14 @@ const jsonLd = {
     <script>
       function applyMode(mode: string) {
         document.documentElement.setAttribute("data-mode", mode);
+        const toggle = document.getElementById("mode-toggle");
         const moon = document.getElementById("icon-moon");
         const sun = document.getElementById("icon-sun");
+        if (toggle) {
+          toggle.setAttribute("aria-pressed", String(mode === "dark"));
+          toggle.title =
+            mode === "dark" ? "Dark mode is on" : "Dark mode is off";
+        }
         if (!moon || !sun) return;
         if (mode === "dark") {
           moon.style.display = "none";

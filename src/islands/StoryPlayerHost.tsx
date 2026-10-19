@@ -6,113 +6,222 @@ import type { RawInitPayload, RawSlide } from "./StoryPlayer";
 // this very host component, so pointing here would recursively iframe itself
 const CHILD_SRC = "/labs/story-player-child";
 
-// a plain SVG data URI standing in for a real S3-hosted photo — kraft is
-// static with no asset backend, but the shape (a URL string) is what matters
-const DEMO_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='844'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fbbf24'/%3E%3Cstop offset='1' stop-color='%23f43f5e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='390' height='844' fill='url(%23g)'/%3E%3Ccircle cx='195' cy='260' r='90' fill='white' fill-opacity='0.25'/%3E%3C/svg%3E";
+// Local pastel backdrops stand in for campaign images while keeping the
+// source project's full-bleed image and focal-point behavior visible.
+const createDemoImage = (start: string, end: string) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${start}"/><stop offset="1" stop-color="${end}"/></linearGradient></defs><rect width="390" height="844" fill="url(#g)"/><circle cx="195" cy="260" r="90" fill="white" fill-opacity=".35"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+};
 
-// a second, visually distinct data URI standing in for an inline "product"
+const DEMO_IMAGE = createDemoImage("#fff5df", "#f7cbb7");
+const DEMO_IMAGE_BLUE = createDemoImage("#eff6ff", "#c7d2fe");
+const DEMO_IMAGE_GREEN = createDemoImage("#ecfdf5", "#d1fae5");
+const DEMO_IMAGE_LILAC = createDemoImage("#f5f3ff", "#fbcfe8");
+
+// a second, visually distinct data URI standing in for an inline
 // image within the content stack — deliberately different from DEMO_IMAGE
 // (a full-bleed background) so the two are obviously different sources
-const DEMO_PRODUCT_IMAGE =
+const DEMO_INLINE_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2306b6d4'/%3E%3Cstop offset='1' stop-color='%233b82f6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='300' height='300' fill='url(%23p)'/%3E%3Crect x='60' y='60' width='180' height='180' rx='16' fill='white' fill-opacity='0.25'/%3E%3C/svg%3E";
 
-// the exact wire shape a real embedding host sends (see the ayo-wrapped POC)
-// — 8 slides exercising every content-block ordering + variant/position
-// combination, deliberately different from StoryPlayer's SAMPLE_SLIDES so
-// it's obvious this came from the host's INIT message, not the child's
-// fallback. All use the {template, variant} object shape for
-// retailer_wrapped_template, since "variant" is what drives position here.
+// Source-compatible slide payloads with sample-only content and images.
 const HOST_SLIDES: RawSlide[] = [
   {
-    // variant 1 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "1" },
+    // template id 1 -> centered layout
+    retailer_wrapped_template_id: "1",
     background_image: DEMO_IMAGE,
-    pointer: "Klik area kanan layar untuk lanjut",
     content: [
-      { style: "title", order: 1, value: "Toko Wrapped 2026" },
-      { style: "body", order: 2, value: "Hari ini {nama_toko} sangat berprestasi!" },
-      { style: "body", order: 3, value: "Yuk lihat pencapaian seru yang sudah kamu raih!" },
+      { style: "title", order: 1, value: "Kilas Balik 2026" },
+      {
+        style: "body",
+        order: 2,
+        value: "Hai {nama}! Tahun ini penuh momen seru.",
+      },
+      {
+        style: "body",
+        order: 3,
+        value: "Yuk lihat kembali beberapa yang paling berkesan.",
+      },
+      { style: "pointer", order: 4, value: "Ketuk sisi kanan untuk lanjut" },
     ],
-    parameter: { nama_toko: "Toko Jaya", retailer_id: "1000", top_sell_sku: "MLDH-01" },
+    parameter: {
+      nama: "Alex",
+    },
   },
   {
-    // variant 2 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "2" },
+    // template id 2 -> centered layout
+    retailer_wrapped_template_id: "2",
+    background_image: DEMO_IMAGE_BLUE,
     content: [
-      { style: "body", order: 1, value: "Produk terlarismu sepanjang tahun ini adalah..." },
-      { style: "image_url", order: 2, value: DEMO_PRODUCT_IMAGE },
-      { style: "title", order: 3, value: "MLDH-01" },
-      { style: "body", order: 4, value: "Paling banyak dicari pelanggan dari awal sampai akhir tahun." },
+      {
+        style: "body",
+        order: 1,
+        value: "Satu momen kecil mengubah hari biasa menjadi istimewa.",
+      },
+      { style: "image_url", order: 2, value: DEMO_INLINE_IMAGE },
+      { style: "title", order: 3, value: "Momen Favorit" },
+      {
+        style: "body",
+        order: 4,
+        value: "Tersimpan sebagai salah satu sorotan tahun ini.",
+      },
     ],
   },
   {
-    // variant 3 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "3" },
+    // template id 3 -> centered layout
+    retailer_wrapped_template_id: "3",
+    background_image: DEMO_IMAGE_GREEN,
     content: [
-      { style: "body", order: 1, value: "Ini dia wajah produk andalanmu." },
-      { style: "image_parameter", order: 2, value: "{product_image}" },
-      { style: "title", order: 3, value: "Produk Favorit Pelanggan" },
-      { style: "body", order: 4, value: "Item ini jadi incaran banyak pembeli di tokomu." },
+      { style: "body", order: 1, value: "Setiap langkah kecil membentuk cerita yang lebih besar." },
+      { style: "image_parameter", order: 2, value: "{highlight_image}" },
+      { style: "title", order: 3, value: "Terus Bertumbuh" },
+      {
+        style: "body",
+        order: 4,
+        value: "Sedikit demi sedikit, banyak hal berhasil kamu capai.",
+      },
     ],
-    parameter: { product_image: DEMO_PRODUCT_IMAGE },
+    parameter: { highlight_image: DEMO_INLINE_IMAGE },
   },
   {
-    // variant 4 -> top
-    retailer_wrapped_template: { template: "template_1", variant: "4" },
+    // template id 4 -> top aligned
+    retailer_wrapped_template_id: "4",
+    background_image: DEMO_IMAGE_LILAC,
+    background_focal_point: "top",
     content: [
-      { style: "body", order: 1, value: "Sepanjang tahun, transaksi di tokomu terus bertambah." },
-      { style: "title", order: 2, value: "1.284 Transaksi" },
-      { style: "body", order: 3, value: "Naik dibanding tahun sebelumnya — kerja bagus!" },
+      {
+        style: "body",
+        order: 1,
+        value: "Lebih banyak alasan untuk merayakan.",
+      },
+      { style: "title", order: 2, value: "1.284 Momen" },
+      {
+        style: "body",
+        order: 3,
+        value: "Satu per satu, semuanya membawamu lebih jauh.",
+      },
     ],
   },
   {
-    // variant 5 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "5" },
+    // template id 5 -> centered layout
+    retailer_wrapped_template_id: "5",
+    background_image: DEMO_IMAGE_BLUE,
     content: [
-      { style: "body", order: 1, value: "Ini produk yang paling sering ditanyakan pelanggan." },
+      {
+        style: "body",
+        order: 1,
+        value: "Hal yang paling sering kamu cari tahun ini...",
+      },
       { style: "title", order: 2, value: "Paling Dicari" },
-      { style: "image_parameter", order: 3, value: "{product_image}" },
-      { style: "body", order: 4, value: "Pelanggan setia terus kembali untuk membeli ini." },
+      { style: "image_parameter", order: 3, value: "{highlight_image}" },
+      {
+        style: "body",
+        order: 4,
+        value: "Sebuah momen kecil yang berarti banyak.",
+      },
     ],
-    parameter: { product_image: DEMO_PRODUCT_IMAGE },
+    parameter: { highlight_image: DEMO_INLINE_IMAGE },
   },
   {
-    // variant 6 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "6" },
+    // template id 6 -> centered layout
+    retailer_wrapped_template_id: "6",
+    background_image: DEMO_IMAGE_GREEN,
     content: [
-      { style: "body", order: 1, value: "Ini produk yang paling sering dibagikan pelanggan." },
-      { style: "title", order: 2, value: "Produk Viral" },
-      { style: "image_url", order: 3, value: DEMO_PRODUCT_IMAGE },
-      { style: "body", order: 4, value: "Banyak yang penasaran dan ingin coba juga." },
+      {
+        style: "body",
+        order: 1,
+        value: "Momen terasa lebih berarti saat dibagikan.",
+      },
+      { style: "title", order: 2, value: "Cerita Bersama" },
+      { style: "image_url", order: 3, value: DEMO_INLINE_IMAGE },
+      {
+        style: "body",
+        order: 4,
+        value: "Terima kasih sudah mengajak orang lain ikut merayakannya.",
+      },
     ],
   },
   {
-    // variant 7 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "7" },
+    // template id 7 -> centered layout
+    retailer_wrapped_template_id: "7",
+    background_image: DEMO_IMAGE_LILAC,
     content: [
       { style: "title", order: 1, value: "Terima Kasih!" },
-      { style: "body", order: 2, value: "Perjalanan tokomu tahun ini luar biasa." },
-      { style: "body", order: 3, value: "Semoga tahun depan makin banyak pelanggan baru." },
-      { style: "body", order: 4, value: "Terus semangat mengembangkan tokomu!" },
+      {
+        style: "body",
+        order: 2,
+        value: "Perjalananmu tahun ini luar biasa.",
+      },
+      {
+        style: "body",
+        order: 3,
+        value: "Semoga tahun depan menghadirkan cerita baru.",
+      },
+      {
+        style: "body",
+        order: 4,
+        value: "Terus melangkah, satu hari pada satu waktu.",
+      },
     ],
   },
   {
-    // variant 8 -> center
-    retailer_wrapped_template: { template: "template_1", variant: "8" },
+    // template id 8 -> centered layout with a light CTA
+    retailer_wrapped_template_id: "8",
+    background_image: DEMO_IMAGE,
+    cta_variant: "light",
     content: [
-      { style: "title", order: 1, value: "Siap Lanjut ke Tahun Berikutnya?" },
-      { style: "body", order: 2, value: "Cek insight lengkap tokomu di aplikasi." },
+      { style: "title", order: 1, value: "Siap menyambut tahun berikutnya?" },
+      {
+        style: "body",
+        order: 2,
+        value: "Simpan cerita favoritmu untuk dikenang kembali.",
+      },
       {
         style: "cta",
         order: 3,
-        value: { label: "Lihat Insight Lengkap", url: "https://example.com" },
+        value: { label: "Lihat Kilas Balik", url: "https://example.com" },
       },
     ],
   },
 ];
 
 type LogEntry = { id: number; text: string };
+
+const PRESETS: { id: string; label: string; slides: RawSlide[] }[] = [
+  { id: "recap", label: "Year in review sample", slides: HOST_SLIDES },
+  {
+    id: "layouts",
+    label: "Typography sampler",
+    slides: [
+      { ...HOST_SLIDES[0], retailer_wrapped_template: "prose" },
+      {
+        retailer_wrapped_template_id: "1",
+        retailer_wrapped_template: "stat",
+        background_image: DEMO_IMAGE,
+        content: [
+          { style: "title", order: 1, value: "1,284" },
+          {
+            style: "body",
+            order: 2,
+            value:
+              "Transactions this year. A big number with a little context.",
+          },
+        ],
+      },
+      {
+        retailer_wrapped_template_id: "1",
+        retailer_wrapped_template: "statement",
+        background_image: DEMO_IMAGE,
+        content: [{ style: "title", order: 1, value: "Keep making things." }],
+      },
+    ],
+  },
+  {
+    id: "media",
+    label: "Images & links",
+    slides: [HOST_SLIDES[1], HOST_SLIDES[2], HOST_SLIDES[7]],
+  },
+];
 
 // what the host actually receives from the child (mirrors StoryPlayer's
 // OutboundMessage) — typed so CTA_CLICKED/SHARE_IMAGE can be handled the way
@@ -131,6 +240,7 @@ export default function StoryPlayerHost() {
   const idRef = useRef(0);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [reloadKey, setReloadKey] = useState(0);
+  const [presetId, setPresetId] = useState("recap");
 
   function pushLog(text: string) {
     idRef.current += 1;
@@ -149,7 +259,7 @@ export default function StoryPlayerHost() {
 
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: "Story Player" });
+        await navigator.share({ files: [file], title: "Kilas Balik" });
         pushLog("→ shared via native share sheet");
         return;
       } catch (err) {
@@ -180,15 +290,23 @@ export default function StoryPlayerHost() {
 
       if (msg.type === "READY") {
         pushLog("← READY");
-        const payload: RawInitPayload = { slides: HOST_SLIDES };
-        iframeRef.current?.contentWindow?.postMessage({ type: "INIT", payload }, "*");
+        const payload: RawInitPayload = {
+          slides: PRESETS.find((preset) => preset.id === presetId)!.slides,
+        };
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "INIT", payload },
+          "*",
+        );
         pushLog("→ INIT (custom slides)");
         return;
       }
 
       if (msg.type === "PLAYER_CLOSE_REQUESTED") {
         pushLog("← PLAYER_CLOSE_REQUESTED");
-        iframeRef.current?.contentWindow?.postMessage({ type: "PLAYER_CLOSE" }, "*");
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "PLAYER_CLOSE" },
+          "*",
+        );
         pushLog("→ PLAYER_CLOSE");
         return;
       }
@@ -208,32 +326,52 @@ export default function StoryPlayerHost() {
       // sheet first, falling back to a download if it's unsupported
       if (msg.type === "SHARE_IMAGE") {
         pushLog(`← SHARE_IMAGE (slide ${msg.slideIndex + 1})`);
-        shareOrDownload(msg.base64, `story-slide-${msg.slideIndex + 1}.png`);
+        shareOrDownload(
+          msg.base64,
+          `story-slide-${msg.slideIndex + 1}.png`,
+        ).catch(() => pushLog("Could not share this image. Please try again."));
         return;
       }
 
-      pushLog(`← ${msg.type ?? "unknown message"}`);
+      pushLog(
+        `← ${msg.type === "ANALYTICS" ? `ANALYTICS ${msg.event}` : (msg.type ?? "unknown message")}`,
+      );
     }
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [reloadKey]);
+  }, [reloadKey, presetId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 sm:flex-row sm:items-start">
-      <div className="flex w-full max-w-[390px] shrink-0 flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[11px] tracking-wider text-(--ink-3) uppercase">
-            host page → iframe
-          </span>
+    <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4">
+      <div className="flex w-full min-w-0 flex-col gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm text-(--ink-2)">
+            Try a preset
+            <select
+              value={presetId}
+              onChange={(event) => {
+                setPresetId(event.target.value);
+                setLog([]);
+                setReloadKey((key) => key + 1);
+              }}
+              className="min-h-11 w-full rounded-lg border border-(--rule) bg-(--surface) px-3 text-(--ink)"
+            >
+              {PRESETS.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             onClick={() => {
               setLog([]);
               setReloadKey((k) => k + 1);
             }}
-            className="font-mono text-[11px] tracking-wider text-(--ink-2) uppercase hover:text-(--ink)"
+            className="min-h-11 rounded-lg border border-(--rule) px-3 text-sm text-(--ink-2) hover:text-(--ink)"
           >
-            ↻ reload
+            Restart
           </button>
         </div>
 
@@ -242,20 +380,29 @@ export default function StoryPlayerHost() {
           ref={iframeRef}
           src={CHILD_SRC}
           title="story player (embedded via iframe)"
-          className="aspect-390/844 w-full rounded-2xl border border-(--rule)"
+          className="aspect-390/1120 w-full rounded-2xl border border-(--rule)"
         />
       </div>
 
-      <div
-        ref={logRef}
-        className="max-h-40 min-h-16 w-full overflow-y-auto border border-(--rule) bg-(--surface) p-3 font-mono text-[11px] leading-relaxed text-(--ink-2) sm:sticky sm:top-4 sm:max-h-[70vh] sm:flex-1"
-      >
-        {log.length === 0 ? (
-          <span className="text-(--ink-3)">waiting for the iframe to load…</span>
-        ) : (
-          log.map((entry) => <div key={entry.id}>{entry.text}</div>)
-        )}
-      </div>
+      <details className="rounded-lg border border-(--rule) p-3 text-sm text-(--ink-2)">
+        <summary className="cursor-pointer py-2">Inspect messages</summary>
+        <p className="mb-3 text-sm leading-relaxed">
+          The host sends the selected preset to the embedded player. Its replies
+          appear below.
+        </p>
+        <div
+          ref={logRef}
+          className="max-h-48 min-h-16 w-full overflow-y-auto bg-(--surface) p-3 font-mono text-sm leading-relaxed text-(--ink-2)"
+        >
+          {log.length === 0 ? (
+            <span className="text-(--ink-3)">
+              waiting for the iframe to load…
+            </span>
+          ) : (
+            log.map((entry) => <div key={entry.id}>{entry.text}</div>)
+          )}
+        </div>
+      </details>
     </div>
   );
 }

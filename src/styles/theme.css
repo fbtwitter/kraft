@@ -4,7 +4,7 @@
   --surface: oklch(99% 0.004 110);
   --ink: oklch(20% 0.02 260);
   --ink-2: oklch(42% 0.018 260);
-  --ink-3: oklch(60% 0.014 260);
+  --ink-3: oklch(48% 0.014 260);
   --rule: oklch(88% 0.01 260);
   --accent: oklch(52% 0.18 160);
   --accent-soft: oklch(52% 0.18 160 / 0.12);
@@ -26,7 +26,7 @@ html[data-mode="light"] {
   --surface: oklch(99% 0.004 110);
   --ink: oklch(20% 0.02 260);
   --ink-2: oklch(42% 0.018 260);
-  --ink-3: oklch(60% 0.014 260);
+  --ink-3: oklch(48% 0.014 260);
   --rule: oklch(88% 0.01 260);
   --accent: oklch(52% 0.18 160);
   --accent-soft: oklch(52% 0.18 160 / 0.12);
@@ -40,7 +40,7 @@ html[data-mode="dark"] {
   --surface: oklch(11% 0.012 260);
   --ink: oklch(94% 0.01 110);
   --ink-2: oklch(72% 0.014 110);
-  --ink-3: oklch(50% 0.012 110);
+  --ink-3: oklch(68% 0.012 110);
   --rule: oklch(28% 0.016 260);
   --accent: oklch(68% 0.2 155);
   --accent-soft: oklch(68% 0.2 155 / 0.16);

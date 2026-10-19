@@ -16,12 +16,30 @@ import "@fontsource/passion-one/400.css";
 // a different arrangement of the same text.
 type TemplateId = "prose" | "statement" | "stat";
 type TextColor = "light" | "dark";
+type CTAVariant = "light" | "dark" | "neutral";
+type ProgressBarVariant = "light" | "dark";
 
 // Variant = content placement within a template — never a typography
 // change. Content *order* isn't a variant concern anymore: it's carried
 // directly by the order of Slide.content itself.
 type Position = "top" | "center" | "bottom";
-type Align = "left" | "center";
+type Align = "left" | "center" | "right";
+
+interface FocalPoint {
+  x: number;
+  y: number;
+}
+
+type FocalAnchor =
+  | "center"
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 interface SlideVariant {
   position?: Position; // default "center"
@@ -31,12 +49,15 @@ interface SlideVariant {
 interface SlideBackground {
   className?: string; // Tailwind bg-* classes (gradient/solid) — used by our own sample slides
   imageUrl?: string; // a real photo, as a host app actually sends — takes priority over className
+  focalPoint?: FocalPoint;
 }
 
 interface SlideLayout {
   template: TemplateId;
   background: SlideBackground;
   textColor?: TextColor; // defaults to "light"
+  ctaVariant?: CTAVariant;
+  progressBarVariant?: ProgressBarVariant;
   variant?: SlideVariant;
 }
 
@@ -58,7 +79,8 @@ export type SlideBlock =
   | { style: "title"; value: TextSegment[] }
   | { style: "body"; value: TextSegment[] }
   | { style: "image"; value: string } // resolved image URL
-  | { style: "cta"; value: { label: string; url: string } };
+  | { style: "cta"; value: { label: string; url: string } }
+  | { style: "pointer"; value: string };
 
 export interface Slide {
   layout: SlideLayout;
@@ -78,44 +100,141 @@ export interface InitPayload {
 // all. normalizeRawSlide below is what translates this into our internal
 // Slide shape.
 export type RawContentBlock =
-  | { style: "title" | "body"; order: number; value: string }
+  | { style: "title" | "body"; order: number | string; value: string }
   // an inline image within the content stack — distinct from the slide-level
   // background_image. image_url's value is a direct URL; image_parameter's
   // value is a "{key}" placeholder resolved against the slide's parameter
   // object into a URL (see resolveParameterPlaceholder below)
-  | { style: "image_url" | "image_parameter"; order: number; value: string }
-  | { style: "cta"; order: number; value: { label: string; url: string } };
+  | {
+      style: "image_url" | "image_parameter";
+      order: number | string;
+      value: string;
+      image_lottie?: string;
+    }
+  | { style: "pointer"; order: number | string; value: string }
+  | { style: "cta"; order: number | string; value: { label: string; url: string } };
 
 export interface RawSlide {
-  // an opaque id the host assigns (e.g. "template_1") — unrelated to our
-  // TemplateId strings, so it always falls back to "prose" below. Different
-  // host versions send this as either a bare string or a {template, variant}
-  // object — both are handled at the INIT boundary in normalizeRawSlide.
-  retailer_wrapped_template: string | { template: string; variant?: string };
+  retailer_wrapped_template_id?: string;
+  // Local-only override used by the typography sampler preset.
+  retailer_wrapped_template?: string | { template: string; variant?: string };
   background_image?: string;
+  background_lottie?: string;
+  background_animation?: string;
+  background_focal_point?: FocalAnchor | FocalPoint;
+  cta_variant?: CTAVariant;
   shareable?: 0 | 1;
-  // the "tap to continue" hint text itself — shown only when non-empty
   pointer?: string;
   content: RawContentBlock[];
-  parameter?: Record<string, string>;
+  parameter?: Record<string, string> | [];
 }
 
 export interface RawInitPayload {
   slides: RawSlide[];
 }
 
+function isRawContentBlock(value: unknown): value is RawContentBlock {
+  if (!value || typeof value !== "object") return false;
+
+  const block = value as Record<string, unknown>;
+  const validOrder =
+    typeof block.order === "number" ||
+    (typeof block.order === "string" && Number.isFinite(Number(block.order)));
+
+  if (!validOrder) return false;
+
+  switch (block.style) {
+    case "title":
+    case "body":
+    case "image_url":
+    case "image_parameter":
+    case "pointer":
+      return typeof block.value === "string";
+    case "cta":
+      return (
+        !!block.value &&
+        typeof block.value === "object" &&
+        typeof (block.value as Record<string, unknown>).label === "string" &&
+        typeof (block.value as Record<string, unknown>).url === "string"
+      );
+    default:
+      return false;
+  }
+}
+
+function isRawSlide(value: unknown): value is RawSlide {
+  if (!value || typeof value !== "object") return false;
+
+  const slide = value as Record<string, unknown>;
+  return (
+    Array.isArray(slide.content) &&
+    slide.content.length > 0 &&
+    slide.content.every(isRawContentBlock)
+  );
+}
+
+function isRawInitPayload(value: unknown): value is RawInitPayload {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    Array.isArray((value as Record<string, unknown>).slides) &&
+    (value as { slides: unknown[] }).slides.length > 0 &&
+    (value as { slides: unknown[] }).slides.every(isRawSlide)
+  );
+}
+
 const TEMPLATE_IDS: TemplateId[] = ["prose", "statement", "stat"];
 
 // the host's own variant ids, several of which can mean the same position
-const VARIANT_POSITION: Record<string, Position> = {
-  "1": "center",
-  "2": "center",
-  "3": "center",
-  "4": "top",
-  "5": "center",
-  "6": "center",
-  "7": "center",
-  "8": "center",
+interface TemplateVariant {
+  position: Position;
+  align: Align;
+  ctaVariant: CTAVariant;
+  textColor: TextColor;
+  progressBarVariant: ProgressBarVariant;
+}
+
+const TEMPLATE_VARIANTS: Record<string, TemplateVariant> = {
+  "1": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "2": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "3": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "4": { position: "top", align: "center", ctaVariant: "dark", textColor: "dark", progressBarVariant: "dark" },
+  "5": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "6": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "7": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
+  "8": { position: "center", align: "center", ctaVariant: "light", textColor: "dark", progressBarVariant: "dark" },
+};
+
+const FALLBACK_VARIANT: TemplateVariant = {
+  position: "center",
+  align: "center",
+  ctaVariant: "neutral",
+  textColor: "light",
+  progressBarVariant: "light",
+};
+
+const FOCAL_ANCHORS: Record<FocalAnchor, FocalPoint> = {
+  center: { x: 50, y: 50 },
+  top: { x: 50, y: 0 },
+  bottom: { x: 50, y: 100 },
+  left: { x: 0, y: 50 },
+  right: { x: 100, y: 50 },
+  "top-left": { x: 0, y: 0 },
+  "top-right": { x: 100, y: 0 },
+  "bottom-left": { x: 0, y: 100 },
+  "bottom-right": { x: 100, y: 100 },
+};
+
+const resolveFocalPoint = (
+  raw: RawSlide["background_focal_point"],
+): FocalPoint | undefined => {
+  if (!raw) return undefined;
+  if (typeof raw === "string") return FOCAL_ANCHORS[raw];
+  if (!Number.isFinite(raw.x) || !Number.isFinite(raw.y)) return undefined;
+  return {
+    x: Math.min(100, Math.max(0, raw.x)),
+    y: Math.min(100, Math.max(0, raw.y)),
+  };
 };
 
 // image_parameter's value is always exactly one "{key}" placeholder,
@@ -123,9 +242,11 @@ const VARIANT_POSITION: Record<string, Position> = {
 function resolveImageParameter(
   value: string,
   parameter?: Record<string, string>,
-): string {
+): { value: string; missing: boolean } {
   const match = value.match(/^\{(.+)\}$/);
-  return match ? (parameter?.[match[1]] ?? "") : value;
+  if (!match) return { value, missing: false };
+  const resolved = parameter?.[match[1]];
+  return { value: resolved ?? "", missing: !resolved };
 }
 
 // title/body values can mix literal text with inline "{key}" placeholders
@@ -135,8 +256,9 @@ function resolveImageParameter(
 function parseTextSegments(
   raw: string,
   parameter?: Record<string, string>,
-): TextSegment[] {
+): { segments: TextSegment[]; missing: boolean } {
   const segments: TextSegment[] = [];
+  let missing = false;
   const pattern = /\{([^{}]+)\}/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -146,61 +268,86 @@ function parseTextSegments(
     }
     const resolved = parameter?.[match[1]];
     if (resolved) segments.push({ text: resolved, fromParameter: true });
+    else missing = true;
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < raw.length) {
     segments.push({ text: raw.slice(lastIndex) });
   }
-  return segments;
+  return { segments, missing };
 }
 
-function normalizeRawSlide(raw: RawSlide): Slide {
-  const rawTemplate = raw.retailer_wrapped_template;
-  const templateId =
-    typeof rawTemplate === "string" ? rawTemplate : rawTemplate.template;
+function normalizeRawSlide(raw: RawSlide): Slide | null {
+  const localTemplate = raw.retailer_wrapped_template;
+  const localTemplateId =
+    typeof localTemplate === "string" ? localTemplate : localTemplate?.template;
   const variantId =
-    typeof rawTemplate === "string" ? undefined : rawTemplate.variant;
-
-  const template = TEMPLATE_IDS.includes(templateId as TemplateId)
-    ? (templateId as TemplateId)
-    : "prose"; // unrecognized/malformed template id — fall back to prose
-  const position = variantId ? VARIANT_POSITION[variantId] : undefined;
+    (typeof localTemplate === "object" ? localTemplate.variant : undefined) ??
+    raw.retailer_wrapped_template_id;
+  const variant = TEMPLATE_VARIANTS[variantId ?? ""] ?? FALLBACK_VARIANT;
+  const template = TEMPLATE_IDS.includes(localTemplateId as TemplateId)
+    ? (localTemplateId as TemplateId)
+    : "prose";
+  const parameter = Array.isArray(raw.parameter) ? undefined : raw.parameter;
+  let missingParameter = false;
+  let pointerHint = raw.pointer;
 
   const content: SlideBlock[] = [...raw.content]
-    .sort((a, b) => a.order - b.order)
-    .flatMap((b): SlideBlock[] => {
-      switch (b.style) {
+    .sort((a, b) => Number(a.order) - Number(b.order))
+    .flatMap((block): SlideBlock[] => {
+      switch (block.style) {
         case "title":
         case "body": {
-          const segments = parseTextSegments(b.value, raw.parameter);
-          // no segments (e.g. the whole value was one unresolved parameter)
-          // renders nothing rather than a blank title/paragraph in its place
-          return segments.length ? [{ style: b.style, value: segments }] : [];
+          const parsed = parseTextSegments(block.value, parameter);
+          missingParameter ||= parsed.missing;
+          return parsed.segments.length
+            ? [{ style: block.style, value: parsed.segments }]
+            : [];
         }
         case "image_url":
-          return [{ style: "image", value: b.value }];
+          return [{ style: "image", value: block.value }];
         case "image_parameter": {
-          const resolved = resolveImageParameter(b.value, raw.parameter);
-          // an empty/unresolved parameter renders no image rather than a
-          // broken <img> in its place
-          return resolved ? [{ style: "image", value: resolved }] : [];
+          const resolved = resolveImageParameter(block.value, parameter);
+          missingParameter ||= resolved.missing;
+          return resolved.value ? [{ style: "image", value: resolved.value }] : [];
         }
         case "cta":
-          return [{ style: "cta", value: b.value }];
+          return [{
+            style: "cta",
+            value: {
+              ...block.value,
+              label: block.value.label
+                .replace(/<br\s*\/?\s*>/gi, " ")
+                .replace(/<[^>]+>/g, "")
+                .replace(/&nbsp;/gi, " ")
+                .trim(),
+            },
+          }];
+        case "pointer":
+          return [{ style: "pointer", value: block.value }];
       }
     });
+
+  if (missingParameter) return null;
+  const focalPoint = resolveFocalPoint(raw.background_focal_point);
 
   return {
     layout: {
       template,
       background: raw.background_image
-        ? { imageUrl: raw.background_image }
+        ? { imageUrl: raw.background_image, focalPoint }
         : { className: "bg-neutral-900" },
-      variant: position ? { position } : undefined,
+      textColor: variant.textColor,
+      ctaVariant: raw.cta_variant ?? variant.ctaVariant,
+      progressBarVariant: variant.progressBarVariant,
+      variant: { position: variant.position, align: variant.align },
     },
     content,
     shareable: raw.shareable !== 0,
-    pointerHint: raw.pointer || undefined,
+    pointerHint:
+      pointerHint && !content.some((block) => block.style === "pointer")
+        ? pointerHint
+        : undefined,
   };
 }
 
@@ -285,12 +432,12 @@ const SAMPLE_SLIDES: Slide[] = [
       },
       variant: { position: "bottom", align: "left" },
     },
-    eyebrow: "kraft · recap",
+    eyebrow: "sample recap",
     content: [
-      { style: "title", value: [{ text: "Your year in experiments" }] },
+      { style: "title", value: [{ text: "Your year in review" }] },
       {
         style: "body",
-        value: [{ text: "A quick look back at what shipped in the lab." }],
+        value: [{ text: "A short look back at the moments worth keeping." }],
       },
     ],
     pointerHint: "tap right to continue",
@@ -302,14 +449,14 @@ const SAMPLE_SLIDES: Slide[] = [
         className: "bg-gradient-to-b from-emerald-500 to-teal-600",
       },
     },
-    eyebrow: "shipped",
+    eyebrow: "little wins",
     content: [
       { style: "title", value: [{ text: "5" }] },
       {
         style: "body",
         value: [
           {
-            text: "Interactive experiments published so far — from counters to iframe testers.",
+            text: "Good finds and small wins made this year memorable.",
           },
         ],
       },
@@ -317,14 +464,18 @@ const SAMPLE_SLIDES: Slide[] = [
   },
   {
     layout: { template: "prose", background: { className: "bg-neutral-900" } },
-    eyebrow: "favorite tag",
+    eyebrow: "favorite moment",
     // deliberately body-before-title, to exercise arbitrary block order
     content: [
       {
         style: "body",
-        value: [{ text: "Most experiments reach for an island before anything else." }],
+        value: [
+          {
+            text: "Some discoveries stay with you long after the day ends.",
+          },
+        ],
       },
-      { style: "title", value: [{ text: "“react”" }] },
+      { style: "title", value: [{ text: "The one you loved most" }] },
     ],
   },
   {
@@ -333,8 +484,8 @@ const SAMPLE_SLIDES: Slide[] = [
       background: { className: "bg-[color:var(--accent)]" },
       textColor: "dark",
     },
-    eyebrow: "keep building",
-    content: [{ style: "title", value: [{ text: "More weird stuff coming" }] }],
+    eyebrow: "keep exploring",
+    content: [{ style: "title", value: [{ text: "More good things ahead" }] }],
   },
   {
     layout: {
@@ -345,20 +496,23 @@ const SAMPLE_SLIDES: Slide[] = [
       },
       variant: { position: "bottom", align: "left" },
     },
-    eyebrow: "kraft",
+    eyebrow: "sample recap",
     content: [
-      { style: "title", value: [{ text: "Thanks for playing" }] },
+      { style: "title", value: [{ text: "Thanks for being part of it" }] },
       {
         style: "body",
         value: [
           {
-            text: "This player is itself an experiment — swipe, tap, or let it autoplay.",
+            text: "Here's to another year of moments worth remembering.",
           },
         ],
       },
       {
         style: "cta",
-        value: { label: "View source", url: "https://github.com/fbtwitter/kraft" },
+        value: {
+          label: "See the highlights",
+          url: "https://example.com",
+        },
       },
     ],
   },
@@ -381,7 +535,7 @@ function CTAButton({
   label: string;
   url: string;
   slideIndex: number;
-  variant?: "light" | "dark";
+  variant?: CTAVariant;
   onSend: (message: OutboundMessage) => void;
 }) {
   const handleClick = (e: React.MouseEvent) => {
@@ -401,7 +555,9 @@ function CTAButton({
       className={`block w-full rounded-[24px] px-5 py-3 text-center font-['Inter'] text-base font-semibold transition-colors ${
         variant === "dark"
           ? "bg-black text-white hover:bg-black/80"
-          : "bg-white text-black hover:bg-white/85"
+          : variant === "neutral"
+            ? "bg-[#d23f32] text-white hover:bg-[#d23f32]/80"
+            : "bg-white text-[#d23f32] hover:bg-white/85"
       }`}
     >
       {label}
@@ -418,14 +574,16 @@ const POSITION_CLASS: Record<Position, string> = {
 const ALIGN_CLASS: Record<Align, string> = {
   left: "items-start text-left",
   center: "items-center text-center",
+  right: "items-end text-right",
 };
 
 // shared across every "title"-style block render (Prose, Statement, Stat's
 // numeral) so the design spec's font/size stays in one place
-const TITLE_CLASS = "font-['Passion_One'] text-[64px] leading-none font-normal";
+const TITLE_CLASS = "font-['Passion_One'] text-[4rem] leading-none font-normal";
 
 // shared across every "image"-style block render
-const IMAGE_CLASS = "mx-auto max-h-[280px] max-w-[280px] w-full rounded-lg object-cover";
+const IMAGE_CLASS =
+  "mx-auto max-h-[280px] max-w-[280px] w-full rounded-lg object-cover";
 
 // caps the content stack's line length regardless of how wide the slide
 // itself renders; centered within its parent's position/align flex rules.
@@ -447,18 +605,50 @@ function renderSegments(segments: TextSegment[]) {
   );
 }
 
+function PointerBlock({
+  value,
+  textColor,
+}: {
+  value: string;
+  textColor: TextColor;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-center gap-2 font-[Inter] text-sm ${textColor === "dark" ? "text-black/70" : "text-white/80"}`}
+    >
+      <span>{value}</span>
+      <ChevronIcon />
+    </div>
+  );
+}
+
 // a real photo (host-provided) draws over the frame with a scrim for text
 // legibility; className backgrounds (our own sample slides) don't need one
-function SlideBackdrop({ background }: { background: SlideBackground }) {
+function SlideBackdrop({
+  background,
+  textColor,
+}: {
+  background: SlideBackground;
+  textColor: TextColor;
+}) {
   if (!background.imageUrl) return null;
+  const scrim =
+    textColor === "dark"
+      ? "bg-gradient-to-t from-white/50 via-white/15 to-white/5"
+      : "bg-gradient-to-t from-black/70 via-black/20 to-black/10";
   return (
     <>
       <img
         src={background.imageUrl}
         alt=""
         className="absolute inset-0 -z-10 h-full w-full object-cover"
+        style={
+          background.focalPoint
+            ? { objectPosition: `${background.focalPoint.x}% ${background.focalPoint.y}%` }
+            : undefined
+        }
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+      <div className={`absolute inset-0 -z-10 ${scrim}`} />
     </>
   );
 }
@@ -467,21 +657,29 @@ function SlideBackdrop({ background }: { background: SlideBackground }) {
 // caption/quote slide. Blocks render in whatever order the slide gives them
 // (body, title, body, cta — anything), each styled by its own `style`.
 function Prose({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
-  const { background, textColor = "light", variant = {} } = slide.layout;
+  const {
+    background,
+    textColor = "light",
+    ctaVariant: layoutCtaVariant,
+    variant = {},
+  } = slide.layout;
   const { position = "center", align = "center" } = variant;
   const isDark = textColor === "dark";
-  const eyebrowClass = isDark ? "text-black/50" : "text-white/50";
+  const textClass = isDark ? "text-black" : "text-white";
+  const softTextClass = isDark ? "text-black/80" : "text-white";
+  const eyebrowClass = isDark ? "text-black/55" : "text-white/60";
+  const ctaVariant = layoutCtaVariant ?? (isDark ? "dark" : "light");
 
   return (
     <div
       ref={containerRef}
       className={`relative flex h-full w-full flex-col ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
     >
-      <SlideBackdrop background={background} />
+      <SlideBackdrop background={background} textColor={textColor} />
       <div className={`${CONTENT_CLASS} gap-4`}>
         {slide.eyebrow && (
           <p
-            className={`font-mono text-xs tracking-wider uppercase ${eyebrowClass}`}
+            className={`font-mono text-sm tracking-wider uppercase ${eyebrowClass}`}
           >
             {slide.eyebrow}
           </p>
@@ -490,7 +688,7 @@ function Prose({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
           switch (block.style) {
             case "title":
               return (
-                <h2 key={i} className={`${TITLE_CLASS} text-white`}>
+                <h2 key={i} className={`${TITLE_CLASS} ${textClass}`}>
                   {renderSegments(block.value)}
                 </h2>
               );
@@ -498,20 +696,30 @@ function Prose({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
               return (
                 <p
                   key={i}
-                  className="font-[Inter] text-sm leading-relaxed text-white"
+                  className={`font-[Inter] text-base leading-relaxed ${softTextClass}`}
                 >
                   {renderSegments(block.value)}
                 </p>
               );
             case "image":
-              return <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />;
+              return (
+                <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />
+              );
+            case "pointer":
+              return (
+                <PointerBlock
+                  key={i}
+                  value={block.value}
+                  textColor={textColor}
+                />
+              );
             case "cta":
               return (
                 <CTAButton
                   key={i}
                   {...block.value}
                   slideIndex={slideIndex}
-                  variant={isDark ? "dark" : "light"}
+                  variant={ctaVariant}
                   onSend={onSend}
                 />
               );
@@ -530,22 +738,30 @@ function Statement({
   containerRef,
   onSend,
 }: SlideCardProps) {
-  const { background, textColor = "light", variant = {} } = slide.layout;
+  const {
+    background,
+    textColor = "light",
+    ctaVariant: layoutCtaVariant,
+    variant = {},
+  } = slide.layout;
   const { position = "center", align = "center" } = variant;
   const isDark = textColor === "dark";
+  const textClass = isDark ? "text-black" : "text-white";
+  const softTextClass = isDark ? "text-black/80" : "text-white";
+  const ctaVariant = layoutCtaVariant ?? (isDark ? "dark" : "light");
 
   return (
     <div
       ref={containerRef}
       className={`relative flex h-full w-full flex-col ${background.imageUrl ? "" : background.className} ${POSITION_CLASS[position]} ${ALIGN_CLASS[align]}`}
     >
-      <SlideBackdrop background={background} />
+      <SlideBackdrop background={background} textColor={textColor} />
       <div className={`${CONTENT_CLASS} gap-4`}>
         {slide.content.map((block, i) => {
           switch (block.style) {
             case "title":
               return (
-                <h2 key={i} className={`${TITLE_CLASS} text-white`}>
+                <h2 key={i} className={`${TITLE_CLASS} ${textClass}`}>
                   {renderSegments(block.value)}
                 </h2>
               );
@@ -553,20 +769,30 @@ function Statement({
               return (
                 <p
                   key={i}
-                  className="font-[Inter] text-sm leading-relaxed text-white"
+                  className={`font-[Inter] text-base leading-relaxed ${softTextClass}`}
                 >
                   {renderSegments(block.value)}
                 </p>
               );
             case "image":
-              return <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />;
+              return (
+                <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />
+              );
+            case "pointer":
+              return (
+                <PointerBlock
+                  key={i}
+                  value={block.value}
+                  textColor={textColor}
+                />
+              );
             case "cta":
               return (
                 <CTAButton
                   key={i}
                   {...block.value}
                   slideIndex={slideIndex}
-                  variant={isDark ? "dark" : "light"}
+                  variant={ctaVariant}
                   onSend={onSend}
                 />
               );
@@ -582,7 +808,8 @@ function Statement({
 // "title" block in slide.content is the numeral; everything else (including
 // any later title blocks) flows into the panel below, in original order.
 function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
-  const { background } = slide.layout;
+  const { background, textColor = "light" } = slide.layout;
+  const numeralClass = textColor === "dark" ? "text-black" : "text-white";
   const numeral = slide.content.find(
     (b): b is Extract<SlideBlock, { style: "title" }> => b.style === "title",
   );
@@ -595,10 +822,10 @@ function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
       <div
         className={`relative flex flex-1 items-center justify-center ${background.imageUrl ? "" : background.className}`}
       >
-        <SlideBackdrop background={background} />
+        <SlideBackdrop background={background} textColor={textColor} />
         {numeral && (
           <div className={`${CONTENT_CLASS} items-center text-center`}>
-            <span className={`${TITLE_CLASS} text-white`}>
+            <span className={`${TITLE_CLASS} ${numeralClass}`}>
               {renderSegments(numeral.value)}
             </span>
           </div>
@@ -607,7 +834,7 @@ function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
       <div className="bg-black">
         <div className={`${CONTENT_CLASS} mx-auto gap-4`}>
           {slide.eyebrow && (
-            <p className="font-mono text-xs tracking-wider text-white/50 uppercase">
+            <p className="font-mono text-sm tracking-wider text-white/50 uppercase">
               {slide.eyebrow}
             </p>
           )}
@@ -625,14 +852,27 @@ function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
                 return (
                   <p
                     key={i}
-                    className="font-[Inter] text-sm leading-relaxed text-white"
+                    className="font-[Inter] text-base leading-relaxed text-white"
                   >
                     {renderSegments(block.value)}
                   </p>
                 );
               case "image":
                 return (
-                  <img key={i} src={block.value} alt="" className={IMAGE_CLASS} />
+                  <img
+                    key={i}
+                    src={block.value}
+                    alt=""
+                    className={IMAGE_CLASS}
+                  />
+                );
+              case "pointer":
+                return (
+                  <PointerBlock
+                    key={i}
+                    value={block.value}
+                    textColor="light"
+                  />
                 );
               case "cta":
                 return (
@@ -676,7 +916,7 @@ function ShareIcon() {
         fillRule="evenodd"
         clipRule="evenodd"
         d="M11.2929 2.29289C11.6834 1.90237 12.3166 1.90237 12.7071 2.29289L15.7071 5.29289C16.0976 5.68342 16.0976 6.31658 15.7071 6.70711C15.3166 7.09763 14.6834 7.09763 14.2929 6.70711L13 5.41421V14C13 14.5523 12.5523 15 12 15C11.4477 15 11 14.5523 11 14V5.41421L9.70711 6.70711C9.31658 7.09763 8.68342 7.09763 8.29289 6.70711C7.90237 6.31658 7.90237 5.68342 8.29289 5.29289L11.2929 2.29289ZM4.87868 8.87868C5.44129 8.31607 6.20435 8 7 8H8C8.55228 8 9 8.44772 9 9C9 9.55228 8.55228 10 8 10H7C6.73478 10 6.48043 10.1054 6.29289 10.2929C6.10536 10.4804 6 10.7348 6 11V19C6 19.2652 6.10536 19.5196 6.29289 19.7071C6.48043 19.8946 6.73478 20 7 20H17C17.2652 20 17.5196 19.8946 17.7071 19.7071C17.8946 19.5196 18 19.2652 18 19V11C18 10.7348 17.8946 10.4804 17.7071 10.2929C17.5196 10.1054 17.2652 10 17 10H16C15.4477 10 15 9.55228 15 9C15 8.44772 15.4477 8 16 8H17C17.7957 8 18.5587 8.31607 19.1213 8.87868C19.6839 9.44129 20 10.2043 20 11V19C20 19.7957 19.6839 20.5587 19.1213 21.1213C18.5587 21.6839 17.7957 22 17 22H7C6.20435 22 5.44129 21.6839 4.87868 21.1213C4.31607 20.5587 4 19.7957 4 19V11C4 10.2044 4.31607 9.44129 4.87868 8.87868Z"
-        fill="white"
+        fill="currentColor"
       />
     </svg>
   );
@@ -695,7 +935,7 @@ function CloseIcon() {
         fillRule="evenodd"
         clipRule="evenodd"
         d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
-        fill="#FEFEFE"
+        fill="currentColor"
       />
     </svg>
   );
@@ -731,7 +971,7 @@ function PostMessageConsole({
   return (
     <div
       ref={logRef}
-      className="fixed right-4 bottom-4 z-50 max-h-[50vh] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-black/20 bg-black/90 p-3 font-mono text-[11px] leading-relaxed text-white shadow-lg"
+      className="max-h-48 overflow-y-auto rounded-lg bg-black/90 p-3 font-mono text-sm leading-relaxed text-white"
     >
       {log.length === 0 ? (
         <span className="text-white/40">
@@ -757,6 +997,9 @@ export default function StoryPlayer() {
   const [capturing, setCapturing] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [closed, setClosed] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [shareError, setShareError] = useState("");
+  const swiperRef = useRef<SwiperType | null>(null);
   // isEmbedded() reads window.parent, which doesn't exist during SSR — this
   // is set after mount so the close button only ever renders client-side
   const [embedded, setEmbedded] = useState(false);
@@ -765,6 +1008,19 @@ export default function StoryPlayer() {
   const activeIndexRef = useRef(0);
   const logIdRef = useRef(0);
   const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPaused(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper || swiper.destroyed) return;
+    if (paused || closed) swiper.autoplay.stop();
+    else swiper.autoplay.start();
+  }, [paused, closed, slidesSource]);
 
   const emit = useCallback((message: OutboundMessage) => {
     logIdRef.current += 1;
@@ -801,26 +1057,21 @@ export default function StoryPlayer() {
     }, INIT_TIMEOUT_MS);
 
     const handleMessage = (event: MessageEvent) => {
-      const msg = event.data as { type?: string; payload?: RawInitPayload };
+      const msg = event.data as { type?: unknown; payload?: unknown };
 
-      if (
-        msg?.type === "INIT" &&
-        Array.isArray(msg.payload?.slides) &&
-        msg.payload.slides.length > 0 &&
-        msg.payload.slides.every(
-          (s) =>
-            Array.isArray(s?.content) &&
-            s.content.some(
-              (b) => b?.style === "title" && typeof b.value === "string",
-            ),
-        )
-      ) {
-        clearTimeout(timer);
-        setSlides(msg.payload.slides.map(normalizeRawSlide));
-        setSlidesSource("init");
-        setActiveIndex(0);
-        setFillPercent(0);
-        return;
+      if (msg?.type === "INIT" && isRawInitPayload(msg.payload)) {
+        const normalizedSlides = msg.payload.slides
+          .map(normalizeRawSlide)
+          .filter((slide): slide is Slide => slide !== null);
+
+        if (normalizedSlides.length > 0) {
+          clearTimeout(timer);
+          setSlides(normalizedSlides);
+          setSlidesSource("init");
+          setActiveIndex(0);
+          setFillPercent(0);
+          return;
+        }
       }
 
       // SPECIAL CASE (mirrors ADR-0002 in the POC): the host confirms the
@@ -901,6 +1152,8 @@ export default function StoryPlayer() {
     const el = slideRefs.current[activeIndex];
     if (!el) return;
     setCapturing(true);
+    setPaused(true);
+    setShareError("");
     try {
       const dataUrl = await domToPng(el, { scale: window.devicePixelRatio });
       const filename = `story-slide-${activeIndex + 1}.png`;
@@ -920,7 +1173,7 @@ export default function StoryPlayer() {
 
       if (navigator.canShare?.({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "Story Player" });
+          await navigator.share({ files: [file], title: "Kilas Balik" });
           return;
         } catch (err) {
           // user dismissed the native share sheet — fall through to download
@@ -933,14 +1186,57 @@ export default function StoryPlayer() {
       link.href = dataUrl;
       link.download = filename;
       link.click();
+    } catch {
+      setShareError("Could not share this slide. Please try again.");
     } finally {
       setCapturing(false);
     }
   }, [activeIndex, emit]);
 
+  function replay() {
+    const swiper = swiperRef.current;
+    if (!swiper) return;
+    swiper.autoplay.stop();
+    swiper.slideTo(0);
+    setFillPercent(0);
+    setPaused(false);
+    swiper.autoplay.start();
+  }
+
+  const progressVariant =
+    slides[activeIndex]?.layout.progressBarVariant ?? "light";
+  const headerTextClass =
+    progressVariant === "dark" ? "text-black" : "text-white";
+  const progressTrackClass =
+    progressVariant === "dark" ? "bg-black/20" : "bg-white/30";
+  const progressFillClass =
+    progressVariant === "dark" ? "bg-black" : "bg-white";
+
   return (
-    <>
-      <div className="relative mx-auto aspect-390/844 h-[min(100dvh,844px)] w-auto max-w-full overflow-hidden rounded-2xl bg-black select-none">
+    <div
+      className="mx-auto flex w-full max-w-[430px] flex-col gap-3 font-[Inter]"
+      role="region"
+      aria-label="Story player"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if ((event.target as HTMLElement).closest("input, select, textarea"))
+          return;
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          if (closed) return;
+          if (event.key === "ArrowLeft") swiperRef.current?.slidePrev();
+          else swiperRef.current?.slideNext();
+        } else if (
+          event.key === " " &&
+          event.target === event.currentTarget &&
+          !closed
+        ) {
+          event.preventDefault();
+          setPaused((value) => !value);
+        }
+      }}
+    >
+      <div className="relative mx-auto aspect-430/853 w-full overflow-hidden rounded-2xl bg-black select-none">
         <div className="absolute inset-x-0 top-0 z-20 flex flex-col gap-2 pt-3">
           <div className="flex items-center justify-between px-3">
             <div className="flex items-center gap-2">
@@ -948,23 +1244,23 @@ export default function StoryPlayer() {
                 <button
                   onClick={handleCloseRequest}
                   aria-label="Close"
-                  className="p-1 text-white"
+                  className={`flex h-11 w-11 items-center justify-center ${headerTextClass}`}
                 >
                   <CloseIcon />
                 </button>
               ) : (
                 <div className="h-7 w-7" />
               )}
-              <span className="font-[Inter] text-base font-semibold text-white">
-                Story Player
+              <span className={`font-[Inter] text-base font-semibold ${headerTextClass}`}>
+                Kilas Balik
               </span>
             </div>
             {(slides[activeIndex]?.shareable ?? true) ? (
               <button
                 onClick={handleShare}
                 disabled={capturing}
-                aria-label="Download current slide as image"
-                className="p-1 text-white disabled:opacity-40"
+                aria-label="Share current slide as image"
+                className={`flex h-11 w-11 items-center justify-center ${headerTextClass} disabled:opacity-40`}
               >
                 <ShareIcon />
               </button>
@@ -976,10 +1272,10 @@ export default function StoryPlayer() {
             {slides.map((_, i) => (
               <div
                 key={i}
-                className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30"
+                className={`h-0.5 flex-1 overflow-hidden rounded-full ${progressTrackClass}`}
               >
                 <div
-                  className="h-full rounded-full bg-white transition-none"
+                  className={`h-full rounded-full ${progressFillClass} transition-none`}
                   style={{
                     width:
                       i < activeIndex
@@ -997,7 +1293,21 @@ export default function StoryPlayer() {
         <Swiper
           key={slidesSource}
           modules={[Autoplay]}
-          autoplay={{ delay: AUTOPLAY_DELAY, disableOnInteraction: false }}
+          autoplay={{
+            delay: AUTOPLAY_DELAY,
+            disableOnInteraction: false,
+            stopOnLastSlide: true,
+          }}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            if (paused || closed) swiper.autoplay.stop();
+          }}
+          onBeforeDestroy={(swiper) => {
+            if (swiperRef.current === swiper) swiperRef.current = null;
+          }}
+          onAutoplayStop={(swiper) => {
+            if (swiperRef.current === swiper && swiper.isEnd) setPaused(true);
+          }}
           onSlideChange={handleSlideChange}
           onReachEnd={handleReachEnd}
           onAutoplayTimeLeft={handleAutoplayTimeLeft}
@@ -1021,7 +1331,7 @@ export default function StoryPlayer() {
 
         {showHint && slides[activeIndex]?.pointerHint && (
           <div className="pointer-events-none absolute right-4 bottom-10 z-20">
-            <div className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 font-mono text-xs text-white">
+            <div className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 font-mono text-sm text-white">
               {slides[activeIndex].pointerHint}
               <ChevronIcon />
             </div>
@@ -1029,13 +1339,66 @@ export default function StoryPlayer() {
         )}
 
         {closed && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 font-mono text-xs tracking-wider text-white/70 uppercase">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/90 font-mono text-sm tracking-wider text-white/70 uppercase">
             player closed
           </div>
         )}
       </div>
 
-      <PostMessageConsole log={log} logRef={logRef} />
-    </>
+      <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+        <button
+          type="button"
+          aria-label="Previous slide"
+          disabled={closed || activeIndex === 0}
+          onClick={() => swiperRef.current?.slidePrev()}
+          className="min-h-11 rounded-lg border border-current/30 px-3 disabled:opacity-40"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          disabled={closed}
+          onClick={() => setPaused((value) => !value)}
+          className="min-h-11 min-w-24 rounded-lg border border-current/30 px-3 disabled:opacity-40"
+        >
+          {paused ? "Resume" : "Pause"}
+        </button>
+        <button
+          type="button"
+          aria-label="Next slide"
+          disabled={closed || activeIndex === slides.length - 1}
+          onClick={() => swiperRef.current?.slideNext()}
+          className="min-h-11 rounded-lg border border-current/30 px-3 disabled:opacity-40"
+        >
+          →
+        </button>
+        <button
+          type="button"
+          disabled={closed}
+          onClick={replay}
+          className="min-h-11 rounded-lg border border-current/30 px-3 disabled:opacity-40"
+        >
+          Replay
+        </button>
+      </div>
+      <p className="text-center text-sm opacity-80" aria-live="polite">
+        Slide {activeIndex + 1} of {slides.length} ·{" "}
+        {closed ? "Closed" : paused ? "Paused" : "Playing"}
+      </p>
+      <p className="text-center text-sm opacity-80">
+        Swipe or tap either side. Use arrow keys when focused.
+      </p>
+      {shareError && (
+        <p role="alert" className="text-center text-sm">
+          {shareError}
+        </p>
+      )}
+      {!embedded && (
+        <details className="rounded-lg border border-current/30 p-3 text-sm">
+          <summary className="cursor-pointer py-2">Inspect messages</summary>
+          <PostMessageConsole log={log} logRef={logRef} />
+        </details>
+      )}
+    </div>
   );
 }

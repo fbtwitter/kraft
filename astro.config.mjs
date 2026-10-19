@@ -46,6 +46,15 @@ export default defineConfig({
       fallbacks: ["ui-monospace", "monospace"],
       optimizedFallbacks: true,
     },
+    {
+      name: "Outfit",
+      cssVariable: "--font-outfit",
+      provider: fontProviders.google(),
+      weights: [400, 700],
+      styles: ["normal"],
+      fallbacks: ["Arial", "sans-serif"],
+      optimizedFallbacks: true,
+    },
   ],
   vite: {
     plugins: [tailwindcss()],

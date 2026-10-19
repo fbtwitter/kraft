@@ -3,7 +3,7 @@ const QrCard = () => {
     <div
       style={{
         all: "revert",
-        fontFamily: "Outfit, sans-serif",
+        fontFamily: "var(--font-outfit)",
         background: "hsl(0, 0%, 100%)",
         borderRadius: "20px",
         padding: "16px",
@@ -20,7 +20,7 @@ const QrCard = () => {
         style={{
           textAlign: "center",
           padding: "16px 8px 8px",
-          fontFamily: "Outfit, sans-serif",
+          fontFamily: "var(--font-outfit)",
         }}
       >
         <h2

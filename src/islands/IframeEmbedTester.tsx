@@ -3,8 +3,8 @@ import { useState } from "react";
 type Example = { label: string; url: string };
 
 const EXAMPLES: Example[] = [
-  { label: "mock cognito login", url: "/labs/cognito-child" },
-  { label: "mock msal login", url: "/labs/msal-child" },
+  { label: "hosted sign-in example", url: "/labs/hosted-sign-in" },
+  { label: "direct sign-in example", url: "/labs/direct-sign-in" },
 ];
 
 function normalizeUrl(raw: string): string | null {
@@ -16,7 +16,7 @@ function normalizeUrl(raw: string): string | null {
 }
 
 const btnClass =
-  "font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider px-3.5 py-2 border border-[color:var(--rule)] text-[color:var(--ink-2)] bg-transparent transition-colors hover:border-[color:var(--ink-3)] hover:text-[color:var(--ink)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[color:var(--rule)] disabled:hover:text-[color:var(--ink-2)]";
+  "font-[family-name:var(--font-mono)] text-sm uppercase tracking-wider px-3.5 py-2 border border-[color:var(--rule)] text-[color:var(--ink-2)] bg-transparent transition-colors hover:border-[color:var(--ink-3)] hover:text-[color:var(--ink)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[color:var(--rule)] disabled:hover:text-[color:var(--ink-2)]";
 
 export default function IframeEmbedTester() {
   const [input, setInput] = useState("");
@@ -31,7 +31,7 @@ export default function IframeEmbedTester() {
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-4 font-sans">
-      <p className="text-sm leading-relaxed text-(--ink-2)">
+      <p className="text-base leading-relaxed text-(--ink-2)">
         Type any URL — your own app, a login screen, an internal tool, anything
         — and load it below in a real{" "}
         <span className="text-(--ink)">&lt;iframe&gt;</span> to check whether it
@@ -43,31 +43,28 @@ export default function IframeEmbedTester() {
         pass/fail.
       </p>
 
-      <details className="text-xs text-(--ink-2)">
+      <details className="text-sm text-(--ink-2)">
         <summary className="cursor-pointer">
-          Cognito vs. MSAL — what's the difference?
+          Hosted vs. direct sign-in — what's the difference?
         </summary>
         <p className="mt-2 leading-relaxed text-ink-3">
-          MSAL talks to Microsoft Entra ID directly. Cognito sits in front of
-          Entra ID as a broker — your app hits Cognito's Hosted UI first, which
-          redirects to Entra ID and back. Both paths land on{" "}
-          <code className="text-ink-2">login.microsoftonline.com</code> for the
-          actual sign-in, so both hit the same iframe-blocking behavior there;
-          Cognito just adds an extra hop (and its own headers) before reaching
-          Microsoft. Testing both isolates whether a failure is Cognito's fault
-          or Microsoft's.
+          A hosted flow sends visitors to a separate sign-in page. A direct flow
+          starts from the app. Either page may block being shown inside a frame;
+          use the examples below to compare redirects, popups, and hidden-frame
+          requests.
         </p>
       </details>
 
       <div className="flex flex-wrap gap-2">
         <input
+          aria-label="URL to embed"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") load();
           }}
-          placeholder="https://example.com or dev.ilogics.iqos.id"
-          className="flex-1 border border-rule px-3 py-2 font-mono text-[12.5px] text-ink placeholder:text-ink-3 focus:border-ink-3 focus:outline-none"
+          placeholder="https://example.com or /labs/sample-page"
+          className="min-w-0 flex-1 border border-rule px-3 py-2 font-mono text-base text-ink placeholder:text-ink-3 focus:border-ink-3 focus:outline-none"
         />
         <button onClick={() => load()} className={btnClass}>
           load
@@ -83,7 +80,7 @@ export default function IframeEmbedTester() {
 
       {EXAMPLES.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[11px] tracking-wider text-ink-3 uppercase">
+          <span className="font-mono text-sm tracking-wider text-ink-3 uppercase">
             quick examples:
           </span>
           {EXAMPLES.map((ex) => (
@@ -109,7 +106,7 @@ export default function IframeEmbedTester() {
           className="h-140 w-full border border-rule"
         />
       ) : (
-        <div className="flex h-140 w-full items-center justify-center border border-dashed border-rule font-mono text-xs text-ink-3">
+        <div className="flex h-140 w-full items-center justify-center border border-dashed border-rule font-mono text-sm text-ink-3">
           enter a URL above and hit load
         </div>
       )}

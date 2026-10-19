@@ -7,24 +7,24 @@ const actions = [
     key: "redirect",
     label: "Redirect",
     lines: [
-      "→ navigating top-level window to Cognito Hosted UI (simulated)",
-      "✓ works even inside an iframe — but the whole page leaves the frame",
+      "→ redirecting to the sign-in service (simulated)",
+      "✓ starts inside a frame, but the full page leaves to complete sign-in",
     ],
   },
   {
     key: "popup",
     label: "Popup",
     lines: [
-      "→ window.open() → Cognito Hosted UI (simulated)",
-      "✓ succeeds inside an iframe: a popup is a separate top-level browsing context",
+      "→ opening the sign-in service in a new window (simulated)",
+      "✓ continues in a popup with its own browsing context",
     ],
   },
   {
     key: "silent",
-    label: "Silent (iframe)",
+    label: "Silent (hidden frame)",
     lines: [
-      "→ prompt=none request via hidden iframe (simulated)",
-      "✓ allowed by Microsoft only when an active SSO session already exists — fails silently otherwise",
+      "→ hidden-frame sign-in request (simulated)",
+      "✓ requires an active session; otherwise it returns no result",
     ],
   },
 ];
@@ -35,13 +35,13 @@ const actions = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>mock cognito login · kraft</title>
+    <title>sample direct sign-in · kraft</title>
     <meta name="robots" content="noindex" />
   </head>
   <body class="flex min-h-dvh items-center justify-center p-8">
     <MockLoginChild
       client:load
-      subtitle="mock login page · cognito hosted ui → entra id"
+      subtitle="sample sign-in · direct flow"
       actions={actions}
     />
   </body>

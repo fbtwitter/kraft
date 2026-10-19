@@ -1,52 +1,220 @@
 ---
 import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const experiments = (
   await getCollection("experiments", ({ data }) => !data.draft)
 ).sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+
+const featured = experiments[0];
+const moreExperiments = experiments.slice(1);
+const countLabel = (count: number) => String(count).padStart(2, "0");
+const dateLabel = (date: Date) =>
+  date.toLocaleDateString("en", { month: "short", year: "numeric" });
 ---
 
 <BaseLayout title="kraft">
-  <div class="wrap py-16 md:py-24 lg:py-32">
-    <div class="mb-12 md:mb-16">
-      <p class="meta mb-4">kraft / lab</p>
-      <h1 class="display text-[clamp(36px,6vw,64px)] leading-[1.15]">
-        Experiments, out in the open.<br />
-        <span class="muted">Play, then leave</span>
-        {" "}
-        <span class="text-accent">feedback</span>.
-      </h1>
-    </div>
+  <div class="wrap pt-8 pb-16 sm:pt-12 sm:pb-20 md:pt-16">
+    <section
+      class="mb-12 grid gap-8 border-b border-rule pb-10 md:mb-16 md:grid-cols-[minmax(0,1.2fr)_minmax(240px,0.8fr)] md:items-end md:gap-12 md:pb-14"
+      aria-labelledby="home-title"
+    >
+      <div>
+        <p class="meta mb-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span>kraft / interactive lab</span>
+          <span class="h-px w-6 bg-accent" aria-hidden="true"></span>
+          <span>{countLabel(experiments.length)} experiments</span>
+        </p>
+        <h1
+          id="home-title"
+          class="display max-w-[850px] text-[clamp(2.625rem,7.5vw,5.5rem)] leading-[0.98] tracking-[-0.05em]"
+        >
+          UI ideas,<br />
+          <span class="text-accent italic">made to be played.</span>
+        </h1>
+      </div>
+
+      <div class="max-w-sm md:justify-self-end">
+        <p class="muted text-base leading-relaxed sm:text-lg">
+          Small interface experiments, open in your browser. Try one, then
+          share your feedback.
+        </p>
+        <a
+          href="#experiments"
+          class="group mt-5 inline-flex min-h-11 items-center gap-2 border-b border-accent pb-1 font-mono text-sm tracking-[0.08em] text-accent uppercase transition-colors hover:text-ink focus-visible:text-ink motion-reduce:transition-none"
+        >
+          Browse experiments
+          <Icon
+            name="lucide:arrow-up-right"
+            size={15}
+            aria-hidden="true"
+            class="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 motion-reduce:transition-none"
+          />
+        </a>
+      </div>
+    </section>
 
     {
-      experiments.length === 0 ? (
-        <p class="fade mono text-sm">No experiments yet. Check back soon.</p>
-      ) : (
-        <div class="idx">
-          {experiments.map((exp) => (
-            <a href={`/experiments/${exp.id}`} class="idx-row">
-              <div class="flex flex-wrap items-baseline justify-between gap-4">
-                <span class="ttl">{exp.data.title}</span>
-                <span class="meta">
-                  {exp.data.publishedAt.toLocaleDateString("en", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+      featured ? (
+        <>
+          <section
+            id="experiments"
+            class="scroll-mt-20"
+            aria-labelledby="featured-title"
+          >
+            <div class="mb-4 flex items-baseline justify-between gap-4">
+              <h2 class="meta">Featured experiment</h2>
+              <span class="meta">01 / {countLabel(experiments.length)}</span>
+            </div>
+
+            <a
+              href={`/experiments/${featured.id}`}
+              aria-label={`Try ${featured.data.title}`}
+              class="idx-row group/card grid overflow-hidden border border-rule bg-surface transition-colors duration-200 hover:border-accent focus-visible:border-accent motion-reduce:transition-none md:grid-cols-2"
+            >
+              <div class="flex aspect-[16/10] items-center justify-center overflow-hidden bg-bg-2 md:aspect-auto md:min-h-[360px]">
+                {featured.data.preview ? (
+                  <img
+                    src={featured.data.preview}
+                    alt=""
+                    loading="eager"
+                    decoding="async"
+                    class="size-full object-contain transition-transform duration-300 motion-safe:group-hover/card:scale-[1.015] motion-safe:group-focus-visible/card:scale-[1.015] motion-reduce:transition-none"
+                  />
+                ) : (
+                  <span class="meta px-4 text-center">
+                    Preview not available
+                  </span>
+                )}
+              </div>
+
+              <div class="flex min-w-0 flex-col justify-between p-5 sm:p-8 lg:p-10">
+                <div>
+                  <time
+                    class="meta mb-7 block text-right"
+                    datetime={featured.data.publishedAt.toISOString()}
+                  >
+                    {dateLabel(featured.data.publishedAt)}
+                  </time>
+                  <h2
+                    id="featured-title"
+                    class="display text-[clamp(2.125rem,4.5vw,3.5rem)] leading-[1.05] transition-colors duration-200 group-hover/card:text-accent group-focus-visible/card:text-accent"
+                  >
+                    {featured.data.title}
+                  </h2>
+                  <p class="muted mt-4 max-w-lg text-base leading-relaxed">
+                    {featured.data.description}
+                  </p>
+                  {featured.data.tags.length > 0 && (
+                    <div class="mt-5 flex flex-wrap gap-2">
+                      {featured.data.tags.map((tag: string) => (
+                        <span class="chip">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div class="mt-8 flex items-center justify-between border-t border-rule pt-4">
+                  <span class="font-mono text-sm tracking-[0.1em] text-accent uppercase">
+                    Try experiment
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class="font-mono text-lg text-accent transition-transform duration-200 motion-safe:group-hover/card:translate-x-1 motion-safe:group-hover/card:-translate-y-1 motion-safe:group-focus-visible/card:translate-x-1 motion-safe:group-focus-visible/card:-translate-y-1 motion-reduce:transition-none"
+                  >
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </a>
+          </section>
+
+          {moreExperiments.length > 0 && (
+            <section class="mt-14 md:mt-20" aria-labelledby="more-title">
+              <div class="mb-6 flex items-end justify-between gap-4 border-b border-rule pb-4">
+                <div>
+                  <p class="meta mb-2">Keep exploring</p>
+                  <h2
+                    id="more-title"
+                    class="display text-[clamp(1.75rem,4vw,2.625rem)] leading-tight"
+                  >
+                    More experiments
+                  </h2>
+                </div>
+                <span class="meta pb-1">
+                  {countLabel(moreExperiments.length)} to try
                 </span>
               </div>
-              <p class="sub">{exp.data.description}</p>
-              {exp.data.tags.length > 0 && (
-                <div class="mt-2.5 flex flex-wrap gap-1.5">
-                  {exp.data.tags.map((tag: string) => (
-                    <span class="chip">{tag}</span>
-                  ))}
-                </div>
-              )}
-            </a>
-          ))}
-        </div>
+
+              <div class="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+                {moreExperiments.map((exp) => (
+                  <a
+                    href={`/experiments/${exp.id}`}
+                    aria-label={`Try ${exp.data.title}`}
+                    class="idx-row group/card flex h-full flex-col border-t border-rule pt-4 transition-colors duration-200 hover:border-accent focus-visible:border-accent motion-reduce:transition-none"
+                  >
+                    <div class="flex aspect-[16/10] items-center justify-center overflow-hidden bg-bg-2">
+                      {exp.data.preview ? (
+                        <img
+                          src={exp.data.preview}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          class="size-full object-contain transition-transform duration-300 motion-safe:group-hover/card:scale-[1.015] motion-safe:group-focus-visible/card:scale-[1.015] motion-reduce:transition-none"
+                        />
+                      ) : (
+                        <span class="meta px-4 text-center">
+                          Preview not available
+                        </span>
+                      )}
+                    </div>
+
+                    <div class="flex flex-1 flex-col pt-4">
+                      <div class="mb-2 flex items-baseline justify-between gap-3">
+                        <h3 class="display text-2xl leading-tight transition-colors duration-200 group-hover/card:text-accent group-focus-visible/card:text-accent">
+                          {exp.data.title}
+                        </h3>
+                        <time
+                          class="meta shrink-0"
+                          datetime={exp.data.publishedAt.toISOString()}
+                        >
+                          {dateLabel(exp.data.publishedAt)}
+                        </time>
+                      </div>
+                      <p class="muted text-base leading-relaxed">
+                        {exp.data.description}
+                      </p>
+                      {exp.data.tags.length > 0 && (
+                        <div class="mt-4 flex flex-wrap gap-1.5">
+                          {exp.data.tags.map((tag: string) => (
+                            <span class="chip">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                      <span class="mt-auto inline-flex items-center gap-2 pt-5 font-mono text-sm tracking-[0.08em] text-accent uppercase">
+                        Try experiment
+                        <span
+                          aria-hidden="true"
+                          class="transition-transform duration-200 motion-safe:group-hover/card:translate-x-1 motion-safe:group-focus-visible/card:translate-x-1 motion-reduce:transition-none"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      ) : (
+        <p
+          id="experiments"
+          class="fade border-t border-rule py-8 font-mono text-sm"
+        >
+          No experiments yet. Check back soon.
+        </p>
       )
     }
   </div>

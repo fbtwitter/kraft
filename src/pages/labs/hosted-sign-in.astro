@@ -7,24 +7,24 @@ const actions = [
     key: "redirect",
     label: "Redirect",
     lines: [
-      "→ navigating top-level window to Entra ID login (simulated)",
-      "✓ works even inside an iframe — but the whole page leaves the frame",
+      "→ navigating the top-level window to a hosted sign-in page (simulated)",
+      "✓ starts inside a frame, but the full page leaves to complete sign-in",
     ],
   },
   {
     key: "popup",
     label: "Popup",
     lines: [
-      "→ window.open() → Entra ID login (simulated)",
-      "✓ succeeds inside an iframe: a popup is a separate top-level browsing context",
+      "→ opening a hosted sign-in page in a new window (simulated)",
+      "✓ continues in a popup with its own browsing context",
     ],
   },
   {
     key: "silent",
-    label: "Silent (ssoSilent)",
+    label: "Silent (iframe)",
     lines: [
-      "→ ssoSilent, prompt=none, via hidden iframe (simulated)",
-      "✓ allowed by Microsoft only when an active SSO session already exists — fails silently otherwise",
+      "→ prompt=none request via hidden iframe (simulated)",
+      "✓ requires an active session; otherwise it returns no result",
     ],
   },
 ];
@@ -35,13 +35,13 @@ const actions = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>mock msal login · kraft</title>
+    <title>sample hosted sign-in · kraft</title>
     <meta name="robots" content="noindex" />
   </head>
   <body class="flex min-h-dvh items-center justify-center p-8">
     <MockLoginChild
       client:load
-      subtitle="mock login page · direct msal → entra id (no broker)"
+      subtitle="sample sign-in · hosted flow"
       actions={actions}
     />
   </body>
