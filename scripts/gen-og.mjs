@@ -1,3 +1,4 @@
+import { SITE_HOST } from "../site.config.mjs";
 import { Resvg } from "@resvg/resvg-js";
 import { writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
@@ -54,7 +55,7 @@ const svg = `
   <line x1="124" y1="460" x2="${W - 124}" y2="460" stroke="${RULE}" stroke-width="1" />
 
   <!-- URL -->
-  <text x="124" y="496" font-family="ui-monospace, monospace" font-size="16" fill="${INK3}" letter-spacing="1">kraft-rzaugusdi.vercel.app</text>
+  <text x="124" y="496" font-family="ui-monospace, monospace" font-size="16" fill="${INK3}" letter-spacing="1">${SITE_HOST}</text>
 
   <!-- Author -->
   <text x="${W - 124}" y="496" font-family="ui-monospace, monospace" font-size="16" fill="${INK3}" letter-spacing="1" text-anchor="end">by Reza Augusdi</text>

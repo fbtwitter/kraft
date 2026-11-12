@@ -1,3 +1,4 @@
+import { SITE_URL } from "./site.config.mjs";
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import react from "@astrojs/react";
@@ -7,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 
 export default defineConfig({
-  site: "https://kraft-rzaugusdi.vercel.app",
+  site: SITE_URL,
   integrations: [
     icon({
       include: {

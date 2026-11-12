@@ -6,7 +6,7 @@
     "test": "bun --bun x playwright test",
     "gen:previews": "bun scripts/capture-previews.ts",
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "bun scripts/gen-og.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "gen:og": "node scripts/gen-og.mjs",
