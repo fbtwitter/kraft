@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import { Font } from "astro:assets";
 import "../../../styles/global.css";
+import "../../../styles/forms.css";
 
 export async function getStaticPaths() {
   const experiments = await getCollection(

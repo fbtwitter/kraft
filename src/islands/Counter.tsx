@@ -21,7 +21,7 @@ export default function Counter() {
           fontWeight: 500,
           color: "var(--ink)",
           lineHeight: 1,
-          tabularNums: "tabular-nums",
+          fontVariantNumeric: "tabular-nums",
         }}
       >
         {count}

@@ -1,3 +1,4 @@
+import { RotateCw } from "lucide-react";
 import { useState } from "react";
 
 type Example = { label: string; url: string };
@@ -74,7 +75,7 @@ export default function IframeEmbedTester() {
           disabled={!src}
           className={btnClass}
         >
-          ↻ reload
+          <RotateCw size={16} aria-hidden="true" /> reload
         </button>
       </div>
 

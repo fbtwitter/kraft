@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./motion.css";
+@import "./forms.css";
 
 /* Self-owned tokens for standalone /labs pages — intentionally similar to kraft's
    look (../theme.css) but defined independently, not imported from it. */

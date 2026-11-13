@@ -1,0 +1,184 @@
+---
+import { Icon } from "astro-icon/components";
+import "../styles/select.css";
+---
+
+<div class="topic-select" data-topic-select>
+  <slot />
+  <button
+    type="button"
+    class="select-trigger"
+    data-trigger
+    role="combobox" aria-label="Topic"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    aria-controls="topic-options"
+    hidden
+    ><span data-value></span><Icon
+      name="lucide:chevron-down"
+      size={16}
+      aria-hidden="true"
+    /></button
+  >
+  <div
+    class="select-menu topic-menu"
+    role="listbox"
+    aria-label="Topics"
+    id="topic-options"
+    hidden
+  >
+  </div>
+</div>
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const root = document.querySelector<HTMLElement>("[data-topic-select]");
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = "true";
+    const select = root.querySelector("select")!;
+    const trigger = root.querySelector<HTMLButtonElement>("[data-trigger]")!;
+    const value = root.querySelector<HTMLElement>("[data-value]")!;
+    const menu = root.querySelector<HTMLElement>("[role=listbox]")!;
+    const controller = new AbortController();
+    const { signal } = controller;
+    let active = 0;
+    let prefix = "";
+    let typedAt = 0;
+    const items = [...select.options].map((option, index) => {
+      const item = document.createElement("div");
+      item.className = "select-option";
+      item.role = "option";
+      item.tabIndex = -1;
+      item.dataset.value = option.value;
+      item.textContent = option.text;
+      menu.append(item);
+      item.addEventListener(
+        "click",
+        (event) => {
+          event.preventDefault();
+          select.value = option.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          close();
+          trigger.focus();
+        },
+        { signal },
+      );
+      return item;
+    });
+    function render() {
+      value.textContent = select.selectedOptions[0]?.text || "All topics";
+      items.forEach((item, index) =>
+        item.setAttribute(
+          "aria-selected",
+          String(select.options[index].selected),
+        ),
+      );
+    }
+    function close() {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function show() {
+      menu.hidden = false;
+      active = Math.max(0, select.selectedIndex);
+      trigger.setAttribute("aria-expanded", "true");
+      items[active]?.focus();
+    }
+    trigger.hidden = false;
+    select.hidden = true;
+    select.setAttribute("aria-hidden", "true");
+    render();
+    trigger.addEventListener(
+      "click",
+      (event) => {
+        event.preventDefault();
+        menu.hidden ? show() : close();
+      },
+      { signal },
+    );
+    root.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Tab") {
+          close();
+          return;
+        }
+        if (event.key === "Escape") {
+          close();
+          trigger.focus();
+          event.preventDefault();
+          return;
+        }
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+          event.preventDefault();
+          if (menu.hidden) {
+            show();
+            return;
+          }
+          active =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? items.length - 1
+                : (active +
+                    (event.key === "ArrowDown" ? 1 : -1) +
+                    items.length) %
+                  items.length;
+          items[active].focus();
+        } else if (
+          !menu.hidden &&
+          (event.key === "Enter" || event.key === " ")
+        ) {
+          event.preventDefault();
+          items[active].click();
+        } else if (!menu.hidden && event.key.length === 1) {
+          const now = performance.now();
+          prefix = now - typedAt > 600 ? event.key : prefix + event.key;
+          typedAt = now;
+          const index = items.findIndex((item) =>
+            item.textContent?.toLowerCase().startsWith(prefix.toLowerCase()),
+          );
+          if (index >= 0) {
+            active = index;
+            items[index].focus();
+          }
+        }
+      },
+      { signal },
+    );
+    select.addEventListener("change", render, { signal });
+    select.form?.addEventListener("reset", () => queueMicrotask(render), {
+      signal,
+    });
+    document.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (!root.contains(event.target as Node)) close();
+      },
+      { signal },
+    );
+    document.addEventListener("astro:before-swap", () => controller.abort(), {
+      once: true,
+    });
+  });
+</script>
+<style>
+  .topic-select {
+    position: relative;
+    width: 100%;
+  }
+  .topic-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    min-width: 180px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 6px;
+  }
+  .topic-menu :global(.select-option[aria-selected="true"]),
+  .topic-menu :global(.select-option:focus) {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+</style>

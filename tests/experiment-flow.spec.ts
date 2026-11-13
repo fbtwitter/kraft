@@ -48,7 +48,7 @@ test("discover an experiment, control playback, and inspect its messages", async
   await expect(
     frame.getByRole("button", { name: "Pause", exact: true }),
   ).toBeVisible();
-  await page.getByLabel("Try a preset").selectOption("layouts");
+  await choose(page, "layouts");
   await expect(frame.getByText("Slide 1 of 3", { exact: false })).toBeVisible();
   await frame.getByRole("button", { name: "Pause", exact: true }).click();
   await frame.getByRole("button", { name: "Next slide" }).click();
@@ -129,7 +129,7 @@ test("media preset shares images and lets the host open links", async ({
     route.fulfill({ body: "Sample insight page" }),
   );
   await page.goto("/experiments/story-player");
-  await page.getByLabel("Try a preset").selectOption("media");
+  await choose(page, "media");
   const frame = page.frameLocator("iframe");
   await expect(frame.getByText("Slide 1 of 3", { exact: false })).toBeVisible();
   await frame.getByRole("button", { name: "Pause", exact: true }).click();
@@ -154,3 +154,8 @@ test("media preset shares images and lets the host open links", async ({
   await expect(popup).toHaveURL("https://example.com/");
   expect(errors).toEqual([]);
 });
+
+async function choose(page: import("@playwright/test").Page, value: string) {
+  await page.getByRole("combobox").click();
+  await page.locator(`[role="option"][data-value="${value}"]`).click();
+}

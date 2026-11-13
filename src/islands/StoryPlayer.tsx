@@ -1,3 +1,10 @@
+import {
+  Share2 as ShareIcon,
+  X as CloseIcon,
+  ChevronRight as ChevronIcon,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -112,7 +119,11 @@ export type RawContentBlock =
       image_lottie?: string;
     }
   | { style: "pointer"; order: number | string; value: string }
-  | { style: "cta"; order: number | string; value: { label: string; url: string } };
+  | {
+      style: "cta";
+      order: number | string;
+      value: { label: string; url: string };
+    };
 
 export interface RawSlide {
   retailer_wrapped_template_id?: string;
@@ -195,14 +206,62 @@ interface TemplateVariant {
 }
 
 const TEMPLATE_VARIANTS: Record<string, TemplateVariant> = {
-  "1": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "2": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "3": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "4": { position: "top", align: "center", ctaVariant: "dark", textColor: "dark", progressBarVariant: "dark" },
-  "5": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "6": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "7": { position: "center", align: "center", ctaVariant: "neutral", textColor: "dark", progressBarVariant: "dark" },
-  "8": { position: "center", align: "center", ctaVariant: "light", textColor: "dark", progressBarVariant: "dark" },
+  "1": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "2": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "3": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "4": {
+    position: "top",
+    align: "center",
+    ctaVariant: "dark",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "5": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "6": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "7": {
+    position: "center",
+    align: "center",
+    ctaVariant: "neutral",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
+  "8": {
+    position: "center",
+    align: "center",
+    ctaVariant: "light",
+    textColor: "dark",
+    progressBarVariant: "dark",
+  },
 };
 
 const FALLBACK_VARIANT: TemplateVariant = {
@@ -309,20 +368,24 @@ function normalizeRawSlide(raw: RawSlide): Slide | null {
         case "image_parameter": {
           const resolved = resolveImageParameter(block.value, parameter);
           missingParameter ||= resolved.missing;
-          return resolved.value ? [{ style: "image", value: resolved.value }] : [];
+          return resolved.value
+            ? [{ style: "image", value: resolved.value }]
+            : [];
         }
         case "cta":
-          return [{
-            style: "cta",
-            value: {
-              ...block.value,
-              label: block.value.label
-                .replace(/<br\s*\/?\s*>/gi, " ")
-                .replace(/<[^>]+>/g, "")
-                .replace(/&nbsp;/gi, " ")
-                .trim(),
+          return [
+            {
+              style: "cta",
+              value: {
+                ...block.value,
+                label: block.value.label
+                  .replace(/<br\s*\/?\s*>/gi, " ")
+                  .replace(/<[^>]+>/g, "")
+                  .replace(/&nbsp;/gi, " ")
+                  .trim(),
+              },
             },
-          }];
+          ];
         case "pointer":
           return [{ style: "pointer", value: block.value }];
       }
@@ -644,7 +707,9 @@ function SlideBackdrop({
         className="absolute inset-0 -z-10 h-full w-full object-cover"
         style={
           background.focalPoint
-            ? { objectPosition: `${background.focalPoint.x}% ${background.focalPoint.y}%` }
+            ? {
+                objectPosition: `${background.focalPoint.x}% ${background.focalPoint.y}%`,
+              }
             : undefined
         }
       />
@@ -868,11 +933,7 @@ function Stat({ slide, slideIndex, containerRef, onSend }: SlideCardProps) {
                 );
               case "pointer":
                 return (
-                  <PointerBlock
-                    key={i}
-                    value={block.value}
-                    textColor="light"
-                  />
+                  <PointerBlock key={i} value={block.value} textColor="light" />
                 );
               case "cta":
                 return (
@@ -901,59 +962,6 @@ function SlideCard(props: SlideCardProps) {
     case "stat":
       return <Stat {...props} />;
   }
-}
-
-function ShareIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M11.2929 2.29289C11.6834 1.90237 12.3166 1.90237 12.7071 2.29289L15.7071 5.29289C16.0976 5.68342 16.0976 6.31658 15.7071 6.70711C15.3166 7.09763 14.6834 7.09763 14.2929 6.70711L13 5.41421V14C13 14.5523 12.5523 15 12 15C11.4477 15 11 14.5523 11 14V5.41421L9.70711 6.70711C9.31658 7.09763 8.68342 7.09763 8.29289 6.70711C7.90237 6.31658 7.90237 5.68342 8.29289 5.29289L11.2929 2.29289ZM4.87868 8.87868C5.44129 8.31607 6.20435 8 7 8H8C8.55228 8 9 8.44772 9 9C9 9.55228 8.55228 10 8 10H7C6.73478 10 6.48043 10.1054 6.29289 10.2929C6.10536 10.4804 6 10.7348 6 11V19C6 19.2652 6.10536 19.5196 6.29289 19.7071C6.48043 19.8946 6.73478 20 7 20H17C17.2652 20 17.5196 19.8946 17.7071 19.7071C17.8946 19.5196 18 19.2652 18 19V11C18 10.7348 17.8946 10.4804 17.7071 10.2929C17.5196 10.1054 17.2652 10 17 10H16C15.4477 10 15 9.55228 15 9C15 8.44772 15.4477 8 16 8H17C17.7957 8 18.5587 8.31607 19.1213 8.87868C19.6839 9.44129 20 10.2043 20 11V19C20 19.7957 19.6839 20.5587 19.1213 21.1213C18.5587 21.6839 17.7957 22 17 22H7C6.20435 22 5.44129 21.6839 4.87868 21.1213C4.31607 20.5587 4 19.7957 4 19V11C4 10.2044 4.31607 9.44129 4.87868 8.87868Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
 }
 
 interface LogEntry {
@@ -1251,7 +1259,9 @@ export default function StoryPlayer() {
               ) : (
                 <div className="h-7 w-7" />
               )}
-              <span className={`font-[Inter] text-base font-semibold ${headerTextClass}`}>
+              <span
+                className={`font-[Inter] text-base font-semibold ${headerTextClass}`}
+              >
                 Kilas Balik
               </span>
             </div>
@@ -1353,7 +1363,7 @@ export default function StoryPlayer() {
           onClick={() => swiperRef.current?.slidePrev()}
           className="min-h-11 rounded-lg border border-current/30 px-3 disabled:opacity-40"
         >
-          ←
+          <ArrowLeft size={18} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -1370,7 +1380,7 @@ export default function StoryPlayer() {
           onClick={() => swiperRef.current?.slideNext()}
           className="min-h-11 rounded-lg border border-current/30 px-3 disabled:opacity-40"
         >
-          →
+          <ArrowRight size={18} aria-hidden="true" />
         </button>
         <button
           type="button"

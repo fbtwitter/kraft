@@ -1,0 +1,243 @@
+---
+import { Icon } from "astro-icon/components";
+import TopicSelect from "../../components/TopicSelect.astro";
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+const experiments = (
+  await getCollection("experiments", ({ data }) => !data.draft)
+).sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+---
+
+<BaseLayout
+  title="Experiments"
+  description="Browse Kraft’s live experiments in interfaces and interaction."
+>
+  <div class="wrap listing">
+    <header>
+      <p class="meta">Kraft / the collection</p>
+      <h1 class="display">Experiments</h1>
+      <p class="muted">
+        Small ideas you can try. Pick an experiment and see how it works.
+      </p>
+    </header>
+    <form class="collection-filters" role="search" onsubmit="return false">
+      <label
+        >Find an experiment<input
+          type="search"
+          id="experiment-query"
+          placeholder="Search titles, descriptions, or tags"
+        /></label
+      >
+      <label
+        >Topic<TopicSelect
+          ><select id="experiment-topic" aria-label="Topic"
+            ><option value="">All topics</option>{
+              [...new Set(experiments.flatMap((exp) => exp.data.tags))]
+                .sort()
+                .map((tag) => <option value={tag}>{tag}</option>)
+            }</select
+          ></TopicSelect
+        ></label
+      >
+      <button type="reset" class="btn ghost">Clear filters</button>
+    </form>
+    <p class="meta filter-count" role="status" id="experiment-results">
+      {experiments.length} experiments
+    </p>
+    <p id="experiment-empty" class="muted" hidden>
+      No experiments match. Try another word or clear your filters.
+    </p>
+    <div class="listing-grid">
+      {
+        experiments.map((exp) => (
+          <a
+            class="listing-card"
+            href={`/experiments/${exp.id}`}
+            data-search={`${exp.data.title} ${exp.data.description} ${exp.data.tags.join(" ")}`.toLowerCase()}
+            data-tags={exp.data.tags.join(" ")}
+          >
+            <div class="listing-copy">
+              <div class="tags">
+                {exp.data.tags.slice(0, 3).map((tag) => (
+                  <span class="chip">{tag}</span>
+                ))}
+              </div>
+              <h2>{exp.data.title}</h2>
+              <p class="muted">{exp.data.description}</p>
+              <span class="action">
+                Try experiment{" "}
+                <Icon
+                  name="lucide:arrow-up-right"
+                  size={16}
+                  aria-hidden="true"
+                />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const query = document.querySelector<HTMLInputElement>("#experiment-query");
+    const topic =
+      document.querySelector<HTMLSelectElement>("#experiment-topic");
+    const form = document.querySelector<HTMLFormElement>(".collection-filters");
+    if (!query || !topic || !form) return;
+    const controller = new AbortController();
+    const cards = [...document.querySelectorAll<HTMLElement>(".listing-card")];
+    const params = new URLSearchParams(location.search);
+    query.value = params.get("q") || "";
+    topic.value = params.get("topic") || "";
+    function filter() {
+      const text = query!.value.trim().toLowerCase();
+      let count = 0;
+      for (const card of cards) {
+        card.hidden = !(
+          card.dataset.search!.includes(text) &&
+          (!topic!.value ||
+            card.dataset.tags!.split(" ").includes(topic!.value))
+        );
+        if (!card.hidden) count++;
+      }
+      document.getElementById("experiment-results")!.textContent =
+        `${count} ${count === 1 ? "experiment" : "experiments"}`;
+      document.getElementById("experiment-empty")!.hidden = count > 0;
+      const url = new URL(location.href);
+      text
+        ? url.searchParams.set("q", query!.value)
+        : url.searchParams.delete("q");
+      topic!.value
+        ? url.searchParams.set("topic", topic!.value)
+        : url.searchParams.delete("topic");
+      history.replaceState(history.state, "", url);
+    }
+    query.addEventListener("input", filter, { signal: controller.signal });
+    topic.addEventListener("change", filter, { signal: controller.signal });
+    form.addEventListener(
+      "reset",
+      () => {
+        query.value = "";
+        topic.value = "";
+        filter();
+      },
+      { signal: controller.signal },
+    );
+    filter();
+    document.addEventListener("astro:before-swap", () => controller.abort(), {
+      once: true,
+    });
+  });
+</script>
+<style>
+  .collection-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .collection-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.875rem;
+    flex: 1 1 240px;
+  }
+  .collection-filters label:nth-child(2) {
+    flex: 0 1 200px;
+  }
+  .collection-filters input,
+  .collection-filters select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+  }
+  .filter-count {
+    margin-bottom: 24px;
+  }
+  .listing-card[hidden],
+  [hidden] {
+    display: none !important;
+  }
+  .listing {
+    padding-block: 64px 96px;
+  }
+  header {
+    max-width: 680px;
+    margin-bottom: 48px;
+  }
+  h1 {
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    margin: 16px 0 24px;
+  }
+  .listing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .listing-card {
+    min-height: 260px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .listing-card:hover {
+    border-color: var(--accent);
+  }
+  img {
+    width: 100%;
+    height: 240px;
+    object-fit: contain;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .listing-copy {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: flex-start;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 20px 0 12px;
+    letter-spacing: -0.035em;
+  }
+  .listing-copy p {
+    margin: 0 0 24px;
+    line-height: 1.75;
+  }
+  .action {
+    color: var(--accent);
+    font-size: 0.875rem;
+    margin-top: auto;
+  }
+  @media (max-width: 650px) {
+    .listing-grid {
+      grid-template-columns: 1fr;
+    }
+    .listing {
+      padding-block: 40px 64px;
+    }
+    img {
+      height: 200px;
+    }
+  }
+</style>

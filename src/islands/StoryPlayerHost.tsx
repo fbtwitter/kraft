@@ -1,3 +1,4 @@
+import SelectField from "./SelectField";
 import { useEffect, useRef, useState } from "react";
 import type { RawInitPayload, RawSlide } from "./StoryPlayer";
 
@@ -72,7 +73,11 @@ const HOST_SLIDES: RawSlide[] = [
     retailer_wrapped_template_id: "3",
     background_image: DEMO_IMAGE_GREEN,
     content: [
-      { style: "body", order: 1, value: "Setiap langkah kecil membentuk cerita yang lebih besar." },
+      {
+        style: "body",
+        order: 1,
+        value: "Setiap langkah kecil membentuk cerita yang lebih besar.",
+      },
       { style: "image_parameter", order: 2, value: "{highlight_image}" },
       { style: "title", order: 3, value: "Terus Bertumbuh" },
       {
@@ -348,10 +353,11 @@ export default function StoryPlayerHost() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm text-(--ink-2)">
             Try a preset
-            <select
+            <SelectField
+              aria-label="Try a preset"
               value={presetId}
-              onChange={(event) => {
-                setPresetId(event.target.value);
+              onValueChange={(value) => {
+                setPresetId(value);
                 setLog([]);
                 setReloadKey((key) => key + 1);
               }}
@@ -362,7 +368,7 @@ export default function StoryPlayerHost() {
                   {preset.label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </label>
           <button
             onClick={() => {

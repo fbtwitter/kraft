@@ -12,7 +12,16 @@ export default defineConfig({
   integrations: [
     icon({
       include: {
-        lucide: ["moon", "sun", "arrow-left", "arrow-up-right"],
+        lucide: [
+          "moon",
+          "sun",
+          "arrow-left",
+          "arrow-up-right",
+          "arrow-right",
+          "arrow-down",
+          "mouse",
+          "chevron-down",
+        ],
       },
     }),
     mdx(),

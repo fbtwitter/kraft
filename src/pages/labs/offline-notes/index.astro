@@ -1,0 +1,131 @@
+---
+
+---
+
+<!doctype html>
+<html lang="en">
+  <head
+    ><meta charset="utf-8" /><meta
+      name="viewport"
+      content="width=device-width"
+    /><meta name="theme-color" content="#101316" /><title>
+      Offline Notes · Kraft
+    </title><link
+      rel="manifest"
+      href="/labs/offline-notes/manifest.webmanifest"
+    /></head
+  >
+  <body
+    ><main>
+      <a href="/experiments/offline-notes">Back to the experiment</a><h1>
+        Offline Notes
+      </h1><p>
+        A small installable browser app. Your note stays on this device.
+      </p><p id="connection" role="status"></p><label for="note"
+        >Try a note</label
+      ><textarea
+        id="note"
+        rows="8"
+        placeholder="Write something, then try going offline."></textarea><p
+        id="saved"
+        role="status"
+      >
+      </p><button id="enable">Enable offline mode</button><p
+        id="offline"
+        role="status"
+      >
+        Offline mode is not enabled yet.
+      </p><p>
+        After enabling, reload this page while offline. Install from your
+        browser’s app menu if available. This demo’s worker only controls
+        /labs/offline-notes/.
+      </p>
+    </main>
+    <script is:inline>
+      const note = document.getElementById("note");
+      try {
+        note.value = localStorage.getItem("kraft-offline-note") || "";
+      } catch {}
+      note.addEventListener("input", () => {
+        try {
+          localStorage.setItem("kraft-offline-note", note.value);
+          document.getElementById("saved").textContent =
+            "Saved on this device.";
+        } catch {
+          document.getElementById("saved").textContent =
+            "Storage unavailable. Keep a copy before leaving.";
+        }
+      });
+      function connection() {
+        document.getElementById("connection").textContent = navigator.onLine
+          ? "Browser reports online."
+          : "Browser reports offline.";
+      }
+      connection();
+      addEventListener("online", connection);
+      addEventListener("offline", connection);
+      document.getElementById("enable").addEventListener("click", async () => {
+        try {
+          if (!("serviceWorker" in navigator)) throw new Error();
+          await navigator.serviceWorker.register("/labs/offline-notes/sw.js", {
+            scope: "/labs/offline-notes/",
+          });
+          await navigator.serviceWorker.ready;
+          document.getElementById("offline").textContent =
+            "Offline mode ready. You can disconnect and reload this page.";
+        } catch {
+          document.getElementById("offline").textContent =
+            "Offline mode unavailable. Use HTTPS or localhost and check your browser settings.";
+        }
+      });
+    </script>
+    <style is:global>
+      html {
+        font: 16px/1.6 system-ui;
+        background: #101316;
+        color: #f3f4ef;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 640px;
+        margin: auto;
+        padding: 40px 24px;
+      }
+      a {
+        color: #80d9ad;
+      }
+      label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      textarea {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 8px 0 16px;
+        padding: 12px;
+        font: inherit;
+        background: #191f23;
+        color: inherit;
+        border: 1px solid #657169;
+        border-radius: 6px;
+      }
+      button {
+        font: inherit;
+        padding: 12px 18px;
+        background: #80d9ad;
+        color: #101316;
+        border: 0;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid #80d9ad;
+        outline-offset: 4px;
+      }
+    </style>
+  </body>
+</html>

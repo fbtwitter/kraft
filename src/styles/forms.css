@@ -1,0 +1,100 @@
+:root {
+  --field-height: 46px;
+  --field-radius: 6px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--field-height);
+  padding: 11px 12px;
+  border: 1px solid var(--rule, var(--lab-rule, #657169));
+  border-radius: var(--field-radius);
+  background: var(--bg, var(--lab-bg, #101316));
+  color: var(--ink, var(--lab-ink, #f3f4ef));
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+select {
+  appearance: auto;
+  cursor: pointer;
+  padding-right: 28px;
+}
+textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+label:has(> select),
+label:has(
+  > input:not([type="checkbox"]):not([type="radio"]):not([type="file"])
+),
+label:has(> textarea),
+.form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+label > select,
+label > input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+label > textarea {
+  width: 100%;
+  margin: 0 !important;
+}
+label:has(> input[type="checkbox"]),
+label:has(> input[type="radio"]) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #80d9ad);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-3, var(--lab-ink-3, #929ca6));
+  opacity: 1;
+}
+:is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent, #80d9ad);
+  outline-offset: 3px;
+}
+:is(input, select, textarea):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+input[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: #c86464;
+}
+.field-help {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--ink-2, var(--lab-ink-2, #bac1c8));
+}
+input[type="file"]:focus-visible + span,
+label:has(input[type="file"]:focus-visible) {
+  outline: 2px solid var(--accent, #80d9ad);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  :is(input, select, textarea):not(:disabled):not(:focus-visible):hover {
+    border-color: var(--ink-3, var(--lab-ink-3, #929ca6));
+  }
+}

@@ -1,10 +1,38 @@
 ---
+import { Icon } from "astro-icon/components";
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import KraftSculpture from "../components/KraftSculpture.astro";
 const experiments = (
   await getCollection("experiments", ({ data }) => !data.draft)
 ).sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+const fragments = [
+  ...experiments.map((exp) => exp.data.title),
+  "await",
+  "{ state }",
+  "0x2a",
+  "render()",
+  "async",
+  "[idea]",
+  "return",
+  "fork()",
+  "<kraft />",
+  "0101",
+  "try",
+  "...",
+  "const",
+  "{ }",
+  "next()",
+];
+const scattered = fragments.map((text, index) => {
+  const random = (salt: number) => {
+    const value = Math.sin((index + 1) * 127.1 + salt * 311.7) * 43758.5453;
+    return value - Math.floor(value);
+  };
+  return {
+    text,
+    style: `--x:${random(1) * 96}%;--y:${random(2) * 94}%;--size:${13 + random(3) * 15}px;--alpha:${0.1 + random(4) * 0.18};--duration:${24 + random(5) * 38}s;--delay:${-random(6) * 60}s;--dx:${(random(7) - 0.5) * 180}px;--dy:${(random(8) - 0.5) * 100}px;--turn:${(random(9) - 0.5) * 28}deg;`,
+  };
+});
 const featured = experiments[0];
 const moreExperiments = experiments.slice(1);
 const countLabel = (count: number) => String(count).padStart(2, "0");
@@ -13,164 +41,296 @@ const dateLabel = (date: Date) =>
 ---
 
 <BaseLayout title="kraft">
-  <section class="wrap lab-hero" aria-labelledby="home-title">
-    <div class="hero-copy">
-      <p class="meta hero-eyebrow">An independent interface lab</p>
-      <h1 id="home-title" class="display">
-        Good ideas<br />get better<br />when you play.
-      </h1>
-      <p class="hero-description">
-        Small experiments in interfaces and interaction. Open one, change
-        something, and see what happens.
-      </p>
-      <div class="hero-actions">
-        <a href="#experiments" class="btn primary"
-          >Explore experiments <span aria-hidden="true">↘</span></a
-        >
-        <a
-          href="https://github.com/fbtwitter/kraft"
-          class="btn ghost"
-          target="_blank"
-          rel="noopener noreferrer"
-          >View source <span aria-hidden="true">↗</span></a
-        >
-      </div>
-    </div>
-    <KraftSculpture />
-  </section>
-  <section
-    id="experiments"
-    class="lab-feature"
-    aria-labelledby="featured-title"
-  >
-    <div class="wrap">
-      <div class="section-topline">
-        <p class="meta">Inside the lab</p><span class="meta"
-          >{countLabel(experiments.length)} experiments to explore</span
-        >
-      </div>
-      {
-        featured ? (
-          <a
-            href={`/experiments/${featured.id}`}
-            aria-label={`Try ${featured.data.title}`}
-            class="idx-row featured-experiment"
-          >
-            <div class="featured-copy">
-              <>
-                <p class="meta">Featured experiment</p>
-                <h2 id="featured-title" class="display">
-                  {featured.data.title}
-                </h2>
-              </>
-              <p class="experiment-description">{featured.data.description}</p>
-              <div class="experiment-tags">
-                {featured.data.tags.slice(0, 3).map((tag: string) => (
-                  <span class="chip">{tag}</span>
-                ))}
-              </div>
-              <span class="experiment-action">
-                Try experiment <span aria-hidden="true">↗</span>
-              </span>
-            </div>
-            <div class="featured-preview">
-              <div class="preview-bar">
-                <>
-                  <span class="preview-dot" />
-                  <span>Live experiment</span>
-                  <time datetime={featured.data.publishedAt.toISOString()}>
-                    {dateLabel(featured.data.publishedAt)}
-                  </time>
-                </>
-              </div>
-              {featured.data.preview ? (
-                <img
-                  src={featured.data.preview}
-                  alt=""
-                  loading="eager"
-                  decoding="async"
-                />
-              ) : (
-                <span class="meta preview-empty">Open to explore</span>
-              )}
-            </div>
-          </a>
-        ) : (
-          <p id="featured-title" class="muted">
-            The lab is getting ready. Check back soon.
-          </p>
-        )
-      }
-    </div>
-  </section>
-  {
-    moreExperiments.length > 0 && (
-      <section class="wrap catalog-section" aria-labelledby="more-title">
-        <div class="catalog-intro">
-          <>
-            <p class="meta">Keep exploring</p>
-            <h2 id="more-title" class="display">
-              Something else
-              <br /> to play with.
-            </h2>
-          </>
-          <>
-            <p>
-              Different questions.
-              <br />A few ways to try them out.
-            </p>
-            <span class="catalog-count mono">
-              {countLabel(moreExperiments.length)} more experiments{" "}
-              <span aria-hidden="true">↗</span>
+  <div id="homepage-sections">
+    <section class="wrap lab-hero" aria-labelledby="home-title">
+      <div class="terminal-background" aria-hidden="true">
+        {
+          scattered.map((fragment) => (
+            <span class="code-fragment" style={fragment.style}>
+              {fragment.text}
             </span>
-          </>
+          ))
+        }
+      </div>
+      <div class="hero-copy">
+        <h1
+          id="home-title"
+          class="display"
+          aria-label="What happens if we try this?"
+        >
+          What happens<br />if we<br /><span
+            class="typed-phrase"
+            aria-hidden="true">try this?</span
+          >
+        </h1>
+        <p class="hero-description">
+          A place for the ideas I want to try out. Pick an experiment, play with
+          it, and see what changes.
+        </p>
+        <div class="hero-actions">
+          <a
+            href="#experiments"
+            class="scroll-cue"
+            aria-label="Scroll to experiments"
+          >
+            <Icon name="lucide:mouse" size={28} aria-hidden="true" />
+          </a>
         </div>
-        <div class="experiment-list">
-          {moreExperiments.map((exp) => (
+      </div>
+    </section>
+    <section
+      id="experiments"
+      class="lab-feature"
+      aria-labelledby="featured-title"
+    >
+      <div class="wrap">
+        <div class="section-topline">
+          <span class="meta"
+            >{countLabel(experiments.length)} experiments to explore</span
+          >
+        </div>
+        {
+          featured ? (
             <a
-              href={`/experiments/${exp.id}`}
-              aria-label={`Try ${exp.data.title}`}
-              class="idx-row experiment-card"
+              href={`/experiments/${featured.id}`}
+              aria-label={`Try ${featured.data.title}`}
+              class="idx-row featured-experiment"
             >
-              <div class="experiment-card-copy">
-                <div class="experiment-card-meta">
-                  <span>{exp.data.tags[0] ?? "experiment"}</span>
-                  <time datetime={exp.data.publishedAt.toISOString()}>
-                    {dateLabel(exp.data.publishedAt)}
-                  </time>
+              <div class="featured-copy">
+                <>
+                  <h2 id="featured-title" class="display">
+                    {featured.data.title}
+                  </h2>
+                </>
+                <div class="featured-details">
+                  <p class="experiment-description">
+                    {featured.data.description}
+                  </p>
+                  <div class="experiment-tags">
+                    {featured.data.tags.slice(0, 3).map((tag: string) => (
+                      <span class="chip">{tag}</span>
+                    ))}
+                  </div>
+                  <span class="experiment-action">
+                    Try experiment{" "}
+                    <Icon
+                      name="lucide:arrow-up-right"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                  </span>
                 </div>
-                <h3>{exp.data.title}</h3>
-                <p>{exp.data.description}</p>
-                <span class="experiment-action">
-                  Try experiment <span aria-hidden="true">→</span>
-                </span>
-              </div>
-              <div class="experiment-card-preview">
-                {exp.data.preview ? (
-                  <img
-                    src={exp.data.preview}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span class="meta">Open to explore</span>
-                )}
               </div>
             </a>
-          ))}
-        </div>
-      </section>
-    )
-  }
+          ) : (
+            <p id="featured-title" class="muted">
+              The lab is getting ready. Check back soon.
+            </p>
+          )
+        }
+      </div>
+    </section>
+    {
+      moreExperiments.length > 0 && (
+        <section class="wrap catalog-section" aria-labelledby="more-title">
+          <div class="catalog-intro">
+            <>
+              <h2 id="more-title" class="display">
+                Find your next
+                <br /> experiment.
+              </h2>
+            </>
+            <>
+              <p>
+                Try a different interaction.
+                <br />
+                See what you can do with it.
+              </p>
+              <span class="catalog-count mono">
+                {countLabel(moreExperiments.length)} more experiments{" "}
+                <Icon
+                  name="lucide:arrow-up-right"
+                  size={16}
+                  aria-hidden="true"
+                />
+              </span>
+            </>
+          </div>
+          <div class="experiment-list">
+            <a class="collection-link" href="/experiments">
+              View all experiments{" "}
+              <Icon name="lucide:arrow-right" size={16} aria-hidden="true" />
+            </a>
+            {moreExperiments.map((exp) => (
+              <a
+                href={`/experiments/${exp.id}`}
+                aria-label={`Try ${exp.data.title}`}
+                class="idx-row experiment-card"
+              >
+                <div class="experiment-card-copy">
+                  <div class="experiment-card-meta">
+                    <span>{exp.data.tags[0] ?? "experiment"}</span>
+                    <time datetime={exp.data.publishedAt.toISOString()}>
+                      {dateLabel(exp.data.publishedAt)}
+                    </time>
+                  </div>
+                  <h3>{exp.data.title}</h3>
+                  <p>{exp.data.description}</p>
+                  <span class="experiment-action">
+                    Try experiment{" "}
+                    <Icon
+                      name="lucide:arrow-right"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
 </BaseLayout>
+<script>
+  import { setupTyping } from "../scripts/typing";
+  import { setupSectionScroll } from "../scripts/section-scroll";
+  document.addEventListener("astro:page-load", () => {
+    const root = document.getElementById("homepage-sections");
+    if (root) {
+      setupSectionScroll(root);
+      setupTyping();
+    }
+  });
+</script>
 <style>
   .lab-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    max-width: none;
+  }
+  .hero-copy {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-width: 0;
+  }
+  .terminal-background {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    mask-image: radial-gradient(
+      ellipse 38% 36% at center,
+      transparent 65%,
+      #000 125%
+    );
+  }
+  .code-fragment {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    font: 400 var(--size)/1.4 var(--font-mono);
+    white-space: nowrap;
+    color: var(--ink-2);
+    opacity: var(--alpha);
+    transform: rotate(var(--turn));
+  }
+  .code-fragment:nth-child(3n) {
+    color: var(--accent);
+  }
+  .typed-phrase {
+    display: inline-block;
+    color: var(--accent);
+    width: 12ch;
+    max-width: 100%;
+    text-align: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .code-fragment {
+      animation: fragment-drift var(--duration) linear var(--delay) infinite
+        alternate;
+    }
+    @keyframes fragment-drift {
+      from {
+        translate: 0 0;
+      }
+      to {
+        translate: var(--dx) var(--dy);
+      }
+    }
+  }
+  @media (max-width: 700px) {
+    .code-fragment {
+      font-size: calc(var(--size) * 0.8);
+    }
+    .code-fragment:nth-child(n + 14) {
+      display: none;
+    }
+  }
+  .scroll-cue {
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+    place-items: center;
+    width: 48px;
+    height: 56px;
+    color: var(--ink-3);
+    border-radius: 8px;
+  }
+  .scroll-cue:hover,
+  .scroll-cue:focus-visible {
+    color: var(--accent);
+  }
+  .catalog-section {
+    max-width: none;
+    padding-inline: max(24px, calc((100% - 1152px) / 2));
+  }
+  .collection-link {
+    color: var(--accent);
+    font-size: 0.875rem;
+  }
+  #homepage-sections > section[data-active] .meta:first-child {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  :global(html:has(#homepage-sections)) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: 73px;
+  }
+  #homepage-sections > section {
+    min-height: calc(100svh - 73px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  :global(html:has(#homepage-sections) .ftr) {
+    scroll-snap-align: end;
+  }
+  .lab-feature {
+    display: grid;
+    align-content: center;
+  }
+  .catalog-section {
+    align-content: center;
+  }
+  @media (max-width: 700px) {
+    :global(html:has(#homepage-sections)) {
+      scroll-padding-top: 65px;
+    }
+    #homepage-sections > section {
+      min-height: calc(100svh - 65px);
+    }
+  }
+  .lab-hero {
+    display: grid;
+    grid-template-columns: 1fr;
     align-items: center;
+    justify-items: center;
+    min-height: calc(100svh - 72px);
+    text-align: center;
     gap: 72px;
-    padding-block: clamp(88px, 10vw, 152px) clamp(96px, 11vw, 160px);
+    padding-block: clamp(64px, 8vw, 112px);
   }
   .hero-eyebrow {
     margin: 0 0 28px;
@@ -182,7 +342,7 @@ const dateLabel = (date: Date) =>
   }
   .hero-description {
     max-width: 460px;
-    margin: 28px 0 0;
+    margin: 28px auto 0;
     font-size: 1rem;
     line-height: 1.75;
     color: var(--ink-2);
@@ -190,6 +350,7 @@ const dateLabel = (date: Date) =>
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
     margin-top: 32px;
   }
@@ -369,6 +530,7 @@ const dateLabel = (date: Date) =>
   @media (max-width: 700px) {
     .lab-hero {
       grid-template-columns: 1fr;
+      min-height: calc(100svh - 64px);
       gap: 20px;
       padding-block: 56px 64px;
     }
@@ -433,6 +595,189 @@ const dateLabel = (date: Date) =>
       height: 150px;
       object-fit: contain;
       background: var(--bg-2);
+    }
+  }
+  /* Each section gets its own composition while sharing the page background. */
+  .lab-feature {
+    padding-block: 72px;
+  }
+  .section-topline {
+    justify-content: flex-end;
+    margin-bottom: 36px;
+  }
+  .featured-copy h2 {
+    font-size: clamp(3rem, 5.5vw, 5rem);
+    max-width: 9ch;
+  }
+  .featured-preview {
+    transform: rotate(2deg);
+    box-shadow: 0 24px 60px #00000018;
+  }
+  .catalog-section {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-block: 72px;
+  }
+  .catalog-intro {
+    text-align: center;
+  }
+  .catalog-intro h2 {
+    font-size: clamp(2.5rem, 4.5vw, 4rem);
+    margin-bottom: 16px;
+  }
+  .catalog-intro h2 br {
+    display: none;
+  }
+  .catalog-intro > p,
+  .catalog-count {
+    display: none;
+  }
+  .experiment-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    position: relative;
+    padding-bottom: 56px;
+  }
+  .collection-link {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .experiment-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 24px;
+  }
+  .experiment-card-preview {
+    order: -1;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--bg-2);
+  }
+  .experiment-card-preview img {
+    height: 180px;
+    width: 100%;
+    object-fit: contain;
+  }
+  .experiment-card-copy {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 0 8px 8px;
+  }
+  .experiment-card h3 {
+    font-size: 1.5rem;
+  }
+  .experiment-card .experiment-action {
+    margin-top: auto;
+  }
+  @media (max-width: 800px) {
+    .experiment-list {
+      grid-template-columns: 1fr;
+      max-width: 520px;
+      width: 100%;
+      margin-inline: auto;
+    }
+    .featured-preview {
+      transform: none;
+    }
+    .featured-copy h2 {
+      max-width: unset;
+    }
+    .experiment-card-preview img {
+      height: 200px;
+    }
+  }
+  .featured-experiment {
+    grid-template-columns: 1fr;
+    max-width: 920px;
+    margin-inline: auto;
+  }
+  .featured-copy h2 {
+    max-width: none;
+  }
+  .experiment-description {
+    max-width: 620px;
+  }
+  .experiment-card {
+    padding: 28px;
+    min-height: 260px;
+  }
+  .experiment-card-copy {
+    padding: 0;
+  }
+  @media (max-width: 700px) {
+    .experiment-card {
+      padding: 24px;
+      min-height: 220px;
+    }
+  }
+  .featured-experiment {
+    display: block;
+    max-width: none;
+  }
+  .featured-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    gap: clamp(40px, 7vw, 112px);
+    align-items: center;
+  }
+  .featured-copy h2 {
+    font-size: clamp(4rem, 8vw, 8rem);
+    max-width: 10ch;
+    line-height: 0.98;
+    letter-spacing: -0.065em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .featured-details {
+    padding-left: 32px;
+    border-left: 2px solid var(--accent);
+  }
+  .featured-details .experiment-description {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+  .featured-details .experiment-tags {
+    margin-block: 24px 36px;
+  }
+  .featured-details .experiment-action {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    min-height: 52px;
+    padding-block: 12px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.9375rem;
+  }
+  .featured-details .experiment-action :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+  .section-topline {
+    justify-content: flex-start;
+    margin-bottom: 56px;
+  }
+  @media (max-width: 700px) {
+    .featured-copy {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+    .featured-copy h2 {
+      font-size: clamp(3.5rem, 16vw, 5.5rem);
+    }
+    .featured-details {
+      padding-left: 20px;
+    }
+    .featured-details .experiment-description {
+      font-size: 1rem;
+    }
+    .section-topline {
+      margin-bottom: 32px;
     }
   }
 </style>

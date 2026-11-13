@@ -1,0 +1,24 @@
+{
+  "id": "/labs/offline-notes/",
+  "name": "Offline Notes",
+  "short_name": "Notes",
+  "start_url": "/labs/offline-notes/",
+  "scope": "/labs/offline-notes/",
+  "display": "standalone",
+  "background_color": "#101316",
+  "theme_color": "#101316",
+  "icons": [
+    {
+      "sizes": "192x192",
+      "purpose": "any",
+      "type": "image/png",
+      "src": "/labs/offline-notes/icon-192.png"
+    },
+    {
+      "sizes": "512x512",
+      "purpose": "any",
+      "type": "image/png",
+      "src": "/labs/offline-notes/icon-512.png"
+    }
+  ]
+}

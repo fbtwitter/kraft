@@ -1,6 +1,7 @@
 ---
 import { PERSONAL_SITE_URL } from "../../site.config.mjs";
 import "../styles/global.css";
+import "../styles/forms.css";
 import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import { Icon } from "astro-icon/components";
@@ -124,12 +125,17 @@ const jsonLd = {
             kraft
           </a>
           <nav class="hdr-nav" aria-label="Main navigation">
-            <a href="/#experiments">Experiments</a>
+            <a href="/experiments">Experiments</a>
             <a
               href="https://github.com/fbtwitter/kraft"
               class="nav-source"
               target="_blank"
-              rel="noopener noreferrer">GitHub ↗</a
+              rel="noopener noreferrer"
+              >GitHub <Icon
+                name="lucide:arrow-up-right"
+                size={14}
+                aria-hidden="true"
+              /></a
             >
           </nav>
           <div class="hdr-actions">
@@ -174,14 +180,24 @@ const jsonLd = {
               </p>
             </div>
             <nav class="ftr-links" aria-label="Footer navigation">
-              <a href="/#experiments">Experiments</a><a
+              <a href="/experiments">Experiments</a><a
                 href="https://github.com/fbtwitter/kraft"
                 target="_blank"
-                rel="noopener noreferrer">GitHub ↗</a
+                rel="noopener noreferrer"
+                >GitHub <Icon
+                  name="lucide:arrow-up-right"
+                  size={14}
+                  aria-hidden="true"
+                /></a
               ><a
                 href={PERSONAL_SITE_URL}
                 target="_blank"
-                rel="noopener noreferrer">Reza Augusdi ↗</a
+                rel="noopener noreferrer"
+                >Reza Augusdi <Icon
+                  name="lucide:arrow-up-right"
+                  size={14}
+                  aria-hidden="true"
+                /></a
               >
             </nav>
           </div>
@@ -189,6 +205,10 @@ const jsonLd = {
       </footer>
     </div>
 
+    <script>
+      import { setupMotion } from "../scripts/motion";
+      document.addEventListener("astro:page-load", setupMotion);
+    </script>
     <script>
       function applyMode(mode: string) {
         document.documentElement.setAttribute("data-mode", mode);

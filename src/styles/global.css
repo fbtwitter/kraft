@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "./motion.css";
 
 @theme {
   --color-accent: var(--accent);
@@ -26,7 +27,7 @@ body {
 html {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: var(--font-body, system-ui, sans-serif);
   font-size: 100%;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -371,4 +372,340 @@ body {
 }
 html[data-mode="light"] .brand-mark {
   filter: brightness(0.55);
+}
+.hdr-nav a,
+.ftr-links a,
+.collection-link,
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+svg[data-icon],
+svg.lucide {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .experiment-action svg,
+  .listing-card .action svg {
+    transition: transform 180ms ease;
+  }
+  .idx-row:hover .experiment-action svg,
+  .listing-card:hover .action svg {
+    transform: translate(3px, -2px);
+  }
+}
+
+/* Demo surfaces and their supporting MDX are separate layout blocks. */
+.experiment-stage {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 24px 0 48px;
+}
+.experiment-stage > astro-island {
+  display: block;
+  padding: clamp(20px, 4vw, 40px);
+  margin-bottom: 48px;
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.experiment-stage > astro-island > div {
+  margin-inline: auto;
+}
+.experiment-stage > h2,
+.experiment-stage > h3,
+.experiment-stage > p,
+.experiment-stage > ul,
+.experiment-stage > ol,
+.experiment-stage > pre {
+  max-width: 760px;
+  margin-inline: auto;
+}
+.experiment-stage > h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  margin-top: 40px;
+  margin-bottom: 16px;
+}
+.experiment-stage > h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-top: 28px;
+  margin-bottom: 12px;
+}
+.experiment-stage > p,
+.experiment-stage > ul,
+.experiment-stage > ol {
+  color: var(--ink-2);
+  font-size: 1rem;
+  line-height: 1.85;
+  margin-block: 16px;
+}
+.experiment-stage > p a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.experiment-stage > pre {
+  padding: 24px;
+  overflow-x: auto;
+  background: var(--bg-2) !important;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  margin-block: 24px;
+}
+
+.experiment-stage button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.experiment-stage button svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+@media (max-width: 600px) {
+  .experiment-stage > astro-island {
+    padding: 20px 16px;
+    margin-bottom: 32px;
+  }
+  .experiment-stage > pre {
+    padding: 16px;
+  }
+}
+.demo-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(440px, 100%);
+  max-width: 100%;
+  padding: 24px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 0;
+  border-left: 1px solid var(--rule);
+  overflow-y: auto;
+}
+.demo-drawer-bottom {
+  inset: auto 0 0;
+  margin-inline: auto;
+  width: min(640px, 100%);
+  height: auto;
+  max-height: 85dvh;
+  min-height: 320px;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--rule);
+}
+.demo-drawer::backdrop {
+  background: #0009;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .demo-drawer[open] {
+    animation: drawer-enter 200ms ease-out;
+  }
+  @keyframes drawer-enter {
+    from {
+      opacity: 0.5;
+      translate: 16px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
+.pattern-demo {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  margin-inline: auto;
+}
+.pattern-demo > label,
+.pattern-demo form {
+  width: 100%;
+}
+
+.pattern-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.pattern-state {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  text-align: center;
+}
+.pattern-state strong {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+.pattern-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(440px, calc(100% - 32px));
+  max-height: 85dvh;
+  overflow-y: auto;
+  padding: 32px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.pattern-dialog::backdrop {
+  background: #0009;
+}
+.pattern-dialog h3 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  padding-right: 28px;
+}
+.pattern-value {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-block: 20px 32px;
+}
+.pattern-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  padding: 8px;
+}
+.sample-cards,
+.sample-list {
+  width: 100%;
+  display: grid;
+  gap: 16px;
+}
+.sample-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.sample-item {
+  min-width: 0;
+  min-height: 140px;
+  padding: 24px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+.sample-item h3 {
+  margin-block: 12px;
+  font-size: 1.125rem;
+}
+.skeleton-lines {
+  display: grid;
+  gap: 16px;
+  padding-block: 8px;
+}
+.skeleton-lines i {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--rule);
+}
+.skeleton-lines i:first-child {
+  width: 45%;
+  height: 20px;
+}
+.skeleton-lines i:last-child {
+  width: 70%;
+}
+.pin-field {
+  width: min(220px, calc(100% - 64px));
+  text-align: center;
+  letter-spacing: 0.6em;
+  font-family: var(--font-mono) !important;
+  font-size: 1.5rem !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [aria-busy="true"] .skeleton-lines {
+    animation: skeleton-breathe 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes skeleton-breathe {
+    from {
+      opacity: 0.45;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .sample-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .pattern-dialog {
+    padding: 24px;
+  }
+}
+/* Consistent controls and comfortable narrow-screen behavior across demos. */
+.experiment-stage label {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.experiment-stage select {
+  cursor: pointer;
+}
+.experiment-stage input::placeholder,
+.experiment-stage textarea::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+.experiment-stage :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.experiment-stage .btn {
+  min-height: 44px;
+  white-space: normal;
+  text-align: center;
+}
+.experiment-stage [role="status"] {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.experiment-stage svg {
+  flex-shrink: 0;
+}
+.pattern-demo .pattern-actions {
+  max-width: 100%;
+}
+@media (max-width: 480px) {
+  .experiment-stage .pattern-actions .btn {
+    flex: 1 1 auto;
+  }
+  .experiment-stage .pattern-demo {
+    gap: 20px;
+  }
+  .experiment-stage .pattern-state {
+    padding: 20px 16px;
+  }
+  .collection-filters label,
+  .collection-filters label:nth-child(2) {
+    flex-basis: 100%;
+  }
 }

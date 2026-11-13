@@ -1,3 +1,7 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
 <kraft-sculpture class="sculpture">
   <div class="sculpture-stage">
     <img
@@ -15,7 +19,11 @@
   </div>
   <div class="sculpture-controls" hidden>
     <button type="button" data-arrange aria-pressed="false"
-      >Take it apart <span aria-hidden="true">↗</span></button
+      >Take it apart <Icon
+        name="lucide:arrow-up-right"
+        size={16}
+        aria-hidden="true"
+      /></button
     >
     <button type="button" data-motion aria-pressed="false">Pause motion</button>
   </div>
