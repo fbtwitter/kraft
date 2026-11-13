@@ -88,13 +88,11 @@ const jsonLd = {
     <meta name="twitter:creator" content="@rzaugusdi" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/kraft-mark.png" />
 
     <!-- JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-    <Font cssVariable="--font-display" preload />
     <Font cssVariable="--font-body" preload />
     <Font cssVariable="--font-mono" preload />
     {includeOutfitFont && <Font cssVariable="--font-outfit" preload />}
@@ -103,11 +101,7 @@ const jsonLd = {
     <script is:inline>
       (function () {
         const stored = localStorage.getItem("kraft-mode");
-        const mode =
-          stored ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
+        const mode = stored || "dark";
         document.documentElement.setAttribute("data-mode", mode);
       })();
     </script>
@@ -120,13 +114,28 @@ const jsonLd = {
       <header class="hdr" transition:persist>
         <div class="hdr-inner">
           <a href="/" class="hdr-brand">
-            <span class="dot" aria-hidden="true"></span>
+            <img
+              class="brand-mark"
+              src="/kraft-mark.png"
+              width="32"
+              height="32"
+              alt=""
+            />
             kraft
           </a>
+          <nav class="hdr-nav" aria-label="Main navigation">
+            <a href="/#experiments">Experiments</a>
+            <a
+              href="https://github.com/fbtwitter/kraft"
+              class="nav-source"
+              target="_blank"
+              rel="noopener noreferrer">GitHub ↗</a
+            >
+          </nav>
           <div class="hdr-actions">
             <a
               href={PERSONAL_SITE_URL}
-              class="hdr-btn"
+              class="hdr-btn personal-site"
               aria-label="Personal site"
               target="_blank"
               rel="noopener noreferrer"
@@ -159,8 +168,22 @@ const jsonLd = {
       <footer class="ftr">
         <div class="wrap">
           <div class="ftr-inner">
-            <span class="meta">kraft</span>
-            <span class="meta">© {new Date().getFullYear()} Reza Augusdi</span>
+            <div>
+              <a href="/" class="ftr-brand">kraft</a><p class="ftr-note">
+                An open lab for curious interfaces.
+              </p>
+            </div>
+            <nav class="ftr-links" aria-label="Footer navigation">
+              <a href="/#experiments">Experiments</a><a
+                href="https://github.com/fbtwitter/kraft"
+                target="_blank"
+                rel="noopener noreferrer">GitHub ↗</a
+              ><a
+                href={PERSONAL_SITE_URL}
+                target="_blank"
+                rel="noopener noreferrer">Reza Augusdi ↗</a
+              >
+            </nav>
           </div>
         </div>
       </footer>
@@ -188,12 +211,7 @@ const jsonLd = {
       }
 
       function getMode() {
-        return (
-          localStorage.getItem("kraft-mode") ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light")
-        );
+        return localStorage.getItem("kraft-mode") || "dark";
       }
 
       document.addEventListener("astro:after-swap", () => {

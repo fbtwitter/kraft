@@ -27,7 +27,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "swiper": "^14.0.2",
-    "tailwindcss": "^4.0.0"
+    "tailwindcss": "^4.0.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@astrojs/ts-plugin": "1.10.12",
@@ -35,6 +36,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.187.0",
     "prettier": "^3.9.4",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0"

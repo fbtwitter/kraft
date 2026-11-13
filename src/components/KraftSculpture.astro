@@ -1,0 +1,127 @@
+<kraft-sculpture class="sculpture">
+  <div class="sculpture-stage">
+    <img
+      src="/kraft-sculpture.png"
+      alt="A green sculpted K standing forward of muted gray code brackets and a slash"
+      width="900"
+      height="900"
+      class="sculpture-poster"
+    />
+    <canvas
+      tabindex="-1"
+      role="img"
+      aria-label="Kraft sculpture. Drag or use arrow keys to rotate. Press Enter to rearrange."
+      aria-describedby="sculpture-hint"></canvas>
+  </div>
+  <div class="sculpture-controls" hidden>
+    <button type="button" data-arrange aria-pressed="false"
+      >Take it apart <span aria-hidden="true">↗</span></button
+    >
+    <button type="button" data-motion aria-pressed="false">Pause motion</button>
+  </div>
+  <p id="sculpture-hint" class="meta">
+    A small study in form. <span class="interactive-hint" hidden
+      >Drag to explore.</span
+    >
+  </p>
+</kraft-sculpture>
+
+<script>
+  import { mountSculpture } from "../scripts/sculpture";
+  class KraftSculpture extends HTMLElement {
+    controller?: AbortController;
+    connectedCallback() {
+      this.controller = new AbortController();
+      mountSculpture(this, this.controller.signal);
+    }
+    disconnectedCallback() {
+      this.controller?.abort();
+    }
+  }
+  if (!customElements.get("kraft-sculpture"))
+    customElements.define("kraft-sculpture", KraftSculpture);
+</script>
+
+<style>
+  .sculpture {
+    display: block;
+    min-width: 0;
+  }
+  .sculpture-stage {
+    position: relative;
+    aspect-ratio: 1;
+    width: 100%;
+  }
+  :global(html[data-mode="light"]) .sculpture-stage {
+    background: #101316;
+    border-radius: 10px;
+  }
+  .sculpture-poster,
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  canvas {
+    opacity: 0;
+    pointer-events: none;
+    touch-action: pan-y;
+    cursor: grab;
+    border-radius: 10px;
+  }
+  canvas:active {
+    cursor: grabbing;
+  }
+  .sculpture[data-ready] canvas {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sculpture[data-ready] .sculpture-poster {
+    visibility: hidden;
+  }
+  .sculpture-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  button {
+    min-height: 44px;
+    padding: 8px 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    color: var(--ink-2);
+  }
+  button[data-arrange] {
+    color: var(--accent);
+  }
+  button span {
+    display: inline-block;
+    margin-left: 8px;
+    transition: transform 200ms ease;
+  }
+  button:hover span {
+    transform: rotate(45deg);
+  }
+  p {
+    margin: 14px 0 0;
+    font-size: 0.8125rem;
+  }
+  @media (max-width: 700px) {
+    .sculpture {
+      max-width: 420px;
+      width: 100%;
+      margin-inline: auto;
+    }
+  }
+</style>
