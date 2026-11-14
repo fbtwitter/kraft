@@ -44,3 +44,20 @@ test("lab layout fits narrow screens and theme survives experiment navigation", 
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
 });
+
+test("hero reshuffles on refresh and responds to pointer gravity", async ({ page }) => {
+  await page.goto("/");
+  const fragments = page.locator(".code-fragment");
+  await expect.poll(() => fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).not.toBe("");
+  const before = await fragments.evaluateAll(nodes => nodes.map(el => `${el.textContent}:${el.getAttribute("style")}`).join("|"));
+  await page.reload();
+  await expect.poll(() => fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).not.toBe("");
+  expect(await fragments.evaluateAll(nodes => nodes.map(el => `${el.textContent}:${el.getAttribute("style")}`).join("|"))).not.toBe(before);
+  await page.mouse.move(300, 250);
+  await expect.poll(() => fragments.evaluateAll(nodes => nodes.some(el => Math.abs(parseFloat((el as HTMLElement).style.getPropertyValue("--pull-x"))) > 0.1))).toBe(true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(fragments.first()).not.toHaveCSS("animation-name", "fragment-drift");
+  expect(await fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).toBe("");
+});

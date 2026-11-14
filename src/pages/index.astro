@@ -201,6 +201,53 @@ const dateLabel = (date: Date) =>
     if (root) {
       setupSectionScroll(root);
       setupTyping();
+      const fragments = Array.from(
+        root.querySelectorAll<HTMLElement>(".code-fragment"),
+      );
+      const content = fragments.map((fragment) => fragment.textContent);
+      for (let i = content.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [content[i], content[j]] = [content[j], content[i]];
+      }
+      fragments.forEach((fragment, index) => {
+        fragment.textContent = content[index];
+        fragment.hidden = Math.random() < 0.2;
+        fragment.style.cssText = `--x:${Math.random() * 96}%;--y:${Math.random() * 94}%;--size:${13 + Math.random() * 15}px;--alpha:${0.1 + Math.random() * 0.18};--duration:${24 + Math.random() * 38}s;--delay:${-Math.random() * 60}s;--dx:${(Math.random() - 0.5) * 180}px;--dy:${(Math.random() - 0.5) * 100}px;--turn:${(Math.random() - 0.5) * 28}deg;`;
+      });
+      const hero = root.querySelector<HTMLElement>(".lab-hero");
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+      if (hero) {
+        let pointer: { x: number; y: number } | null = null;
+        let frame = 0;
+        const offsets = fragments.map(() => ({ x: 0, y: 0 }));
+        const move = (event: PointerEvent) => {
+          if (event.pointerType === "touch") return;
+          const bounds = hero.getBoundingClientRect();
+          pointer = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+        };
+        const leave = () => { pointer = null; };
+        const tick = () => {
+          fragments.forEach((fragment, index) => {
+            const offset = offsets[index];
+            const dx = pointer ? pointer.x - fragment.offsetLeft - fragment.offsetWidth / 2 : 0;
+            const dy = pointer ? pointer.y - fragment.offsetTop - fragment.offsetHeight / 2 : 0;
+            const pull = reduced.matches ? 0 : Math.max(0, 1 - Math.hypot(dx, dy) / 500) * 0.3;
+            offset.x += (dx * pull - offset.x) * 0.045;
+            offset.y += (dy * pull - offset.y) * 0.045;
+            fragment.style.setProperty("--pull-x", `${offset.x}px`);
+            fragment.style.setProperty("--pull-y", `${offset.y}px`);
+          });
+          frame = requestAnimationFrame(tick);
+        };
+        hero.addEventListener("pointermove", move);
+        hero.addEventListener("pointerleave", leave);
+        if (!reduced.matches) frame = requestAnimationFrame(tick);
+        document.addEventListener("astro:before-swap", () => {
+          cancelAnimationFrame(frame);
+          hero.removeEventListener("pointermove", move);
+          hero.removeEventListener("pointerleave", leave);
+        }, { once: true });
+      }
     }
   });
 </script>
@@ -237,7 +284,7 @@ const dateLabel = (date: Date) =>
     white-space: nowrap;
     color: var(--ink-2);
     opacity: var(--alpha);
-    transform: rotate(var(--turn));
+    transform: translate(var(--pull-x, 0px), var(--pull-y, 0px)) rotate(var(--turn));
   }
   .code-fragment:nth-child(3n) {
     color: var(--accent);
