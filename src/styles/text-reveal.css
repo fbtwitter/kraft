@@ -1,0 +1,59 @@
+.text-reveal {
+  max-width: 720px;
+}
+.text-reveal > label {
+  max-width: none;
+}
+.reveal-timing {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.reveal-timing input[type="range"] {
+  border: 0;
+  padding-inline: 0;
+  background: transparent;
+  accent-color: var(--accent);
+}
+.reveal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.reveal-preview {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: clamp(20px, 4vw, 32px);
+  min-height: 240px;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.125rem, 2.5vw, 1.75rem);
+  line-height: 1.6;
+}
+.reveal-typewriter {
+  white-space: pre-wrap;
+}
+.reveal-line {
+  margin: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+.reveal-line[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+@media (max-width: 600px) {
+  .reveal-timing {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

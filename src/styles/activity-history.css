@@ -1,0 +1,97 @@
+.activity-history {
+  max-width: 680px;
+}
+.activity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.activity-groups {
+  display: grid;
+  gap: 28px;
+}
+.activity-groups h2 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+.activity-groups ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.activity-history .activity-receipt {
+  padding: 0;
+  border-radius: 6px;
+}
+.activity-receipt summary {
+  padding: 16px;
+}
+.activity-summary {
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  width: calc(100% - 24px);
+  vertical-align: top;
+}
+.activity-summary strong {
+  font-weight: 500;
+}
+.activity-summary small {
+  display: block;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  margin-top: 4px;
+}
+.activity-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.activity-receipt-body {
+  margin: 0 16px;
+  padding-block: 16px;
+  border-top: 1px solid var(--rule);
+}
+.activity-receipt-body h3,
+.activity-state h2 {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+.activity-receipt-body dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-block: 16px;
+}
+.activity-receipt-body dt {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.activity-receipt-body dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.activity-state {
+  border-block: 1px solid var(--rule);
+  padding-block: 24px;
+}
+.activity-state p {
+  margin-block: 12px 20px;
+  color: var(--ink-2);
+}
+@media (max-width: 480px) {
+  .activity-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .activity-amount {
+    text-align: left;
+  }
+  .activity-receipt-body dl {
+    grid-template-columns: 1fr;
+  }
+}

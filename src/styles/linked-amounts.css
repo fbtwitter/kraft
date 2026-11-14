@@ -1,0 +1,48 @@
+.linked-amounts {
+  width: 100%;
+  max-width: 620px;
+  margin-inline: auto;
+  text-align: left;
+  gap: 20px;
+}
+.amount-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.amount-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.amount-facts dt {
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+}
+.amount-facts dd {
+  margin: 6px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.amount-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.amount-fields input {
+  font-variant-numeric: tabular-nums;
+}
+.amount-result {
+  border-top: 1px solid var(--rule);
+  padding-top: 20px;
+  min-height: 110px;
+}
+.amount-result p {
+  margin: 0 0 10px;
+}
+@media (max-width: 480px) {
+  .amount-fields,
+  .amount-facts {
+    grid-template-columns: 1fr;
+  }
+}

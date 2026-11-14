@@ -1,0 +1,77 @@
+.scroll-navigation {
+  max-width: 720px;
+}
+.scroll-preview-shell {
+  position: relative;
+  padding-bottom: 76px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg-2);
+}
+.scroll-preview {
+  position: relative;
+  height: 440px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+}
+.scroll-preview-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  transition: transform 160ms ease;
+}
+.scroll-preview-header[data-hidden="true"] {
+  transform: translateY(-100%);
+}
+.scroll-preview-header:focus-within {
+  transform: none;
+}
+.scroll-preview-header strong {
+  font-weight: 500;
+}
+.scroll-preview-content section {
+  min-height: 190px;
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.scroll-preview-content h2 {
+  margin-block: 8px 12px;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+.scroll-preview-content p {
+  max-width: 52ch;
+}
+.scroll-preview-content .scroll-preview-short {
+  min-height: 0;
+  padding-block: 16px;
+}
+.scroll-preview-footer {
+  padding: 20px;
+  background: var(--bg-2);
+}
+.scroll-preview-footer p {
+  margin-bottom: 12px;
+}
+.scroll-floating-action {
+  position: absolute;
+  right: 24px;
+  bottom: 16px;
+  z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-preview-header {
+    transition: none;
+  }
+}
