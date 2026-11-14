@@ -126,28 +126,8 @@ const jsonLd = {
               aria-current={isActive("/experiments") ? "page" : undefined}
               >Experiments</a
             >
-            <a
-              href="https://github.com/fbtwitter/kraft"
-              class="nav-source"
-              target="_blank"
-              rel="noopener noreferrer"
-              >GitHub <Icon
-                name="lucide:arrow-up-right"
-                size={14}
-                aria-hidden="true"
-              /></a
-            >
           </nav>
           <div class="hdr-actions">
-            <a
-              href={PERSONAL_SITE_URL}
-              class="hdr-btn personal-site"
-              aria-label="Personal site"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon name="lucide:arrow-up-right" size={13} />
-            </a>
             <button
               class="hdr-btn"
               id="mode-toggle"
@@ -183,26 +163,25 @@ const jsonLd = {
               <a href="/" class="ftr-brand">kraft</a><p class="ftr-note">
                 An open lab for curious interfaces.
               </p>
+              <p class="ftr-copyright">
+                © {new Date().getFullYear()} Reza Fauzi Augusdi
+              </p>
             </div>
             <nav class="ftr-links" aria-label="Footer navigation">
-              <a href="/experiments">Experiments</a><a
+              <a
                 href="https://github.com/fbtwitter/kraft"
+                aria-label="GitHub"
+                title="GitHub"
                 target="_blank"
                 rel="noopener noreferrer"
-                >GitHub <Icon
-                  name="lucide:arrow-up-right"
-                  size={14}
-                  aria-hidden="true"
-                /></a
+                ><Icon name="lucide:github" size={20} aria-hidden="true" /></a
               ><a
                 href={PERSONAL_SITE_URL}
+                aria-label="rzaugusdi — Personal site"
+                title="rzaugusdi — Personal site"
                 target="_blank"
                 rel="noopener noreferrer"
-                >Reza Augusdi <Icon
-                  name="lucide:arrow-up-right"
-                  size={14}
-                  aria-hidden="true"
-                /></a
+                ><Icon name="lucide:globe" size={20} aria-hidden="true" /></a
               >
             </nav>
           </div>

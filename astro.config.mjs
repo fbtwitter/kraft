@@ -15,6 +15,8 @@ export default defineConfig({
         lucide: [
           "moon",
           "sun",
+          "github",
+          "globe",
           "arrow-left",
           "arrow-up-right",
           "arrow-right",

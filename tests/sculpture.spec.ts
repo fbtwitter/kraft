@@ -41,12 +41,18 @@ test("offline mini-app saves a note and reloads without network", async ({
   context,
 }) => {
   await page.goto("/labs/offline-notes/");
+  await expect(
+    page.getByRole("link", { name: "Back to the experiment" }),
+  ).toHaveCount(0);
   await page.getByLabel("Try a note").fill("A local test note");
   await page.getByRole("button", { name: "Enable offline mode" }).click();
   await expect(page.locator("#offline")).toContainText("Offline mode ready");
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByLabel("Try a note")).toHaveValue("A local test note");
+  await expect(
+    page.getByRole("link", { name: "Back to the experiment" }),
+  ).toHaveCount(0);
   await expect(page.locator("#connection")).toContainText("offline");
   await context.setOffline(false);
 });

@@ -215,10 +215,20 @@ body {
   .ftr-links {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 8px;
     font-size: 0.875rem;
     color: var(--ink-2);
     min-height: 44px;
+  }
+  .ftr-links a {
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+  }
+  .ftr-copyright {
+    margin: 12px 0 0;
+    color: var(--ink-3);
+    font-size: 0.8125rem;
   }
   .ftr-links a:hover {
     color: var(--accent);
@@ -322,15 +332,9 @@ body {
   .hdr-nav {
     gap: 16px;
   }
-  .hdr-nav .nav-source {
-    display: none;
-  }
   .hdr-btn {
     width: 44px;
     height: 44px;
-  }
-  .hdr-actions .personal-site {
-    display: none;
   }
   .ftr-inner {
     flex-direction: column;
