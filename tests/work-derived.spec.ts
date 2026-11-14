@@ -4,16 +4,23 @@ test("five categories group the collection and preserve filtering", async ({
   page,
 }) => {
   await page.goto("/experiments");
+  const total = await page.locator(".listing-card").count();
+  const planningCount = await page
+    .getByRole("region", { name: "Lists & planning", exact: true })
+    .locator(".listing-card")
+    .count();
   const category = page.locator('button[role="combobox"]');
   await expect(category).toContainText("All categories");
   await expect(page.locator(".category-group:visible")).toHaveCount(5);
-  await expect(page.locator(".listing-card:visible")).toHaveCount(22);
+  await expect(page.locator(".listing-card:visible")).toHaveCount(total);
   await category.click();
   await expect(page.getByRole("option")).toHaveCount(6);
   await page
     .getByRole("option", { name: "Lists & planning", exact: true })
     .click();
-  await expect(page.locator(".listing-card:visible")).toHaveCount(3);
+  await expect(page.locator(".listing-card:visible")).toHaveCount(
+    planningCount,
+  );
   await expect(page.locator(".category-group:visible")).toHaveCount(1);
   await page.reload();
   await expect(category).toContainText("Lists & planning");
@@ -22,7 +29,7 @@ test("five categories group the collection and preserve filtering", async ({
   await expect(page.locator(".category-group:visible")).toHaveCount(0);
   await page.getByRole("button", { name: "Clear filters" }).click();
   await expect(category).toContainText("All categories");
-  await expect(page.locator(".listing-card:visible")).toHaveCount(22);
+  await expect(page.locator(".listing-card:visible")).toHaveCount(total);
   await page.goto("/experiments?topic=forms");
   await expect(category).toContainText("Forms & input");
 });

@@ -5,6 +5,7 @@ import "../styles/forms.css";
 import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import { Icon } from "astro-icon/components";
+import LabAppearance from "../components/LabAppearance.astro";
 
 interface Props {
   title?: string;
@@ -56,7 +57,7 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="en" data-mode="light">
+<html lang="en" data-mode="dark">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -99,20 +100,15 @@ const jsonLd = {
     {includeOutfitFont && <Font cssVariable="--font-outfit" preload />}
     <ClientRouter />
 
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem("kraft-mode");
-        const mode = stored || "dark";
-        document.documentElement.setAttribute("data-mode", mode);
-      })();
-    </script>
+    <LabAppearance />
   </head>
 
   <body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <div id="page-progress" aria-hidden="true" transition:persist></div>
     <div class="shell">
       <!-- Flat top bar header -->
-      <header class="hdr" transition:persist>
+      <header class="hdr">
         <div class="hdr-inner">
           <a href="/" class="hdr-brand">
             <img
@@ -125,7 +121,11 @@ const jsonLd = {
             kraft
           </a>
           <nav class="hdr-nav" aria-label="Main navigation">
-            <a href="/experiments">Experiments</a>
+            <a
+              href="/experiments"
+              aria-current={isActive("/experiments") ? "page" : undefined}
+              >Experiments</a
+            >
             <a
               href="https://github.com/fbtwitter/kraft"
               class="nav-source"
@@ -152,22 +152,27 @@ const jsonLd = {
               class="hdr-btn"
               id="mode-toggle"
               aria-label="Dark mode"
-              aria-pressed="false"
-              title="Dark mode is off"
+              aria-pressed="true"
+              title="Dark mode is on"
             >
-              <Icon name="lucide:moon" id="icon-moon" size={13} />
               <Icon
-                name="lucide:sun"
-                id="icon-sun"
+                name="lucide:moon"
+                id="icon-moon"
                 size={13}
                 style="display:none"
               />
+              <Icon name="lucide:sun" id="icon-sun" size={13} />
             </button>
           </div>
         </div>
       </header>
 
-      <main id="main-content" class="page" transition:name="page-main">
+      <main
+        id="main-content"
+        class="page"
+        tabindex="-1"
+        transition:name="page-main"
+      >
         <slot />
       </main>
 
@@ -208,52 +213,6 @@ const jsonLd = {
     <script>
       import { setupMotion } from "../scripts/motion";
       document.addEventListener("astro:page-load", setupMotion);
-    </script>
-    <script>
-      function applyMode(mode: string) {
-        document.documentElement.setAttribute("data-mode", mode);
-        const toggle = document.getElementById("mode-toggle");
-        const moon = document.getElementById("icon-moon");
-        const sun = document.getElementById("icon-sun");
-        if (toggle) {
-          toggle.setAttribute("aria-pressed", String(mode === "dark"));
-          toggle.title =
-            mode === "dark" ? "Dark mode is on" : "Dark mode is off";
-        }
-        if (!moon || !sun) return;
-        if (mode === "dark") {
-          moon.style.display = "none";
-          sun.style.display = "block";
-        } else {
-          moon.style.display = "block";
-          sun.style.display = "none";
-        }
-      }
-
-      function getMode() {
-        return localStorage.getItem("kraft-mode") || "dark";
-      }
-
-      document.addEventListener("astro:after-swap", () => {
-        document.documentElement.setAttribute("data-mode", getMode());
-      });
-
-      document.addEventListener("astro:page-load", () => {
-        applyMode(getMode());
-
-        const btn = document.getElementById("mode-toggle");
-        if (!btn) return;
-        const fresh = btn.cloneNode(true) as HTMLElement;
-        btn.replaceWith(fresh);
-        fresh.addEventListener("click", () => {
-          const next =
-            document.documentElement.getAttribute("data-mode") === "dark"
-              ? "light"
-              : "dark";
-          localStorage.setItem("kraft-mode", next);
-          applyMode(next);
-        });
-      });
     </script>
 
     <script>

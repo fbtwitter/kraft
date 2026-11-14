@@ -1,13 +1,14 @@
 ---
 import { getCollection, render } from "astro:content";
 import { Font } from "astro:assets";
+import { createExperimentCatalog } from "../../../lib/experiment-catalog";
+import LabAppearance from "../../../components/LabAppearance.astro";
 import "../../../styles/global.css";
 import "../../../styles/forms.css";
 
 export async function getStaticPaths() {
-  const experiments = await getCollection(
-    "experiments",
-    ({ data }) => !data.draft,
+  const { experiments } = createExperimentCatalog(
+    await getCollection("experiments"),
   );
   return experiments.map((exp) => ({
     params: { slug: exp.id },
@@ -20,7 +21,7 @@ const { Content } = await render(exp);
 ---
 
 <!doctype html>
-<html lang="en" data-mode="light">
+<html lang="en" data-mode="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -34,19 +35,11 @@ const { Content } = await render(exp);
         </>
       )
     }
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem("kraft-mode");
-        const mode =
-          stored ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
-        document.documentElement.setAttribute("data-mode", mode);
-      })();
-    </script>
+    <LabAppearance />
   </head>
-  <body class="standalone-experiment flex min-h-dvh items-center justify-center p-4 sm:p-8">
+  <body
+    class="standalone-experiment flex min-h-dvh items-center justify-center p-4 sm:p-8"
+  >
     <Content />
   </body>
 </html>

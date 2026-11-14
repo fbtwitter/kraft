@@ -1,0 +1,50 @@
+<script is:inline>
+  (() => {
+    if (window.kraftAppearance) {
+      window.kraftAppearance();
+      return;
+    }
+
+    let mode = "dark";
+    try {
+      const saved = localStorage.getItem("kraft-mode");
+      if (saved === "dark" || saved === "light") mode = saved;
+    } catch {
+      // Storage restrictions must not prevent using the current page.
+    }
+
+    function apply() {
+      document.documentElement.setAttribute("data-mode", mode);
+      const toggle = document.getElementById("mode-toggle");
+      const moon = document.getElementById("icon-moon");
+      const sun = document.getElementById("icon-sun");
+      if (toggle) {
+        toggle.setAttribute("aria-pressed", String(mode === "dark"));
+        toggle.title = mode === "dark" ? "Dark mode is on" : "Dark mode is off";
+      }
+      if (moon) moon.style.display = mode === "dark" ? "none" : "block";
+      if (sun) sun.style.display = mode === "dark" ? "block" : "none";
+    }
+
+    // Inline scripts can run again after Astro navigation; retain one owner.
+    window.kraftAppearance = apply;
+    apply();
+    document.addEventListener("DOMContentLoaded", apply, { once: true });
+    document.addEventListener("astro:after-swap", apply);
+    document.addEventListener("astro:page-load", apply);
+    document.addEventListener("click", (event) => {
+      if (
+        !(event.target instanceof Element) ||
+        !event.target.closest("#mode-toggle")
+      )
+        return;
+      mode = mode === "dark" ? "light" : "dark";
+      apply();
+      try {
+        localStorage.setItem("kraft-mode", mode);
+      } catch {
+        // The in-memory choice remains active across client navigation.
+      }
+    });
+  })();
+</script>

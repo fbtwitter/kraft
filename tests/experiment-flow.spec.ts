@@ -4,11 +4,14 @@ test("discover an experiment, control playback, and inspect its messages", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".idx-row")).toHaveCount(22);
+  await expect(
+    page.getByRole("link", { name: "View all experiments" }),
+  ).toBeVisible();
   await page.screenshot({
     path: "test-results/home-desktop.png",
     fullPage: true,
   });
+  await page.getByRole("link", { name: "View all experiments" }).click();
   await page.getByRole("link", { name: /Story Player/ }).click();
   await expect(
     page.getByRole("link", { name: "Open standalone" }),

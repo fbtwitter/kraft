@@ -4,6 +4,7 @@ test("linked amounts preserve the edited field and apply rounding and limits", a
   page,
 }) => {
   await page.goto("/experiments/linked-amounts/island");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   const rupiah = page.getByLabel("Rupiah (IDR)");
   const gold = page.getByLabel("Gold (grams)");
   const status = page.getByRole("status");

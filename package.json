@@ -3,7 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "test": "bun --bun x playwright test",
+    "test": "bun run test:catalog && bun --bun x playwright test",
+    "test:catalog": "bun tests/experiment-catalog.check.ts",
     "gen:previews": "bun scripts/capture-previews.ts",
     "dev": "astro dev",
     "build": "bun scripts/gen-og.mjs && astro build",

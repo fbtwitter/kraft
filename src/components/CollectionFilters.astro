@@ -1,0 +1,53 @@
+---
+import CollectionFiltersControl from "./CollectionFiltersControl";
+interface Props {
+  categories: string[];
+}
+const { categories } = Astro.props;
+---
+
+<CollectionFiltersControl categories={categories} client:load />
+<style is:global>
+  .collection-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px) auto;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 24px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  #main-content .collection-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.875rem;
+    max-width: none;
+    min-width: 0;
+    color: var(--ink-2);
+  }
+  .collection-filters .btn {
+    min-height: 46px;
+    white-space: nowrap;
+  }
+  .collection-filters input,
+  .collection-filters select {
+    width: 100%;
+    max-width: none;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+  }
+  @media (max-width: 650px) {
+    .collection-filters {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 20px;
+    }
+  }
+</style>

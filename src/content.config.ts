@@ -17,6 +17,7 @@ const experiments = defineCollection({
     tags: z.array(z.string()).default([]),
     publishedAt: z.coerce.date(),
     draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
     usesKraftFonts: z.boolean().default(false),
     tipsUrl: z.string().url().optional(),
     preview: z.string().optional(),

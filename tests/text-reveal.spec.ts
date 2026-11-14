@@ -5,6 +5,7 @@ test("text reveal timing, pause/resume, replay, modes, editing and reset", async
 }) => {
   await page.clock.install();
   await page.goto("/experiments/text-reveal/island");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   const text = page.getByRole("textbox", { name: "Sample text" });
   const replay = page.getByRole("button", { name: "Replay", exact: true });
   const output = page.locator(".reveal-typewriter");

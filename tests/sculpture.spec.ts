@@ -10,7 +10,9 @@ test("experiment collection is discoverable and responsive", async ({
       .getByRole("link", { name: "Experiments", exact: true })
       .click();
     await expect(page).toHaveURL(/\/experiments\/?$/);
-    await expect(page.locator(".listing-card")).toHaveCount(22);
+    await expect(
+      page.locator('.listing-card[href="/experiments/counter"]'),
+    ).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -140,12 +142,13 @@ test("collection filters handle search, empty results, and clear", async ({
   page,
 }) => {
   await page.goto("/experiments");
+  const total = await page.locator(".listing-card").count();
   await page.getByLabel("Find an experiment").fill("PIN Entry");
   await expect(page.locator(".listing-card:visible")).toHaveCount(1);
   await choose(page, "Browser capabilities");
   await expect(page.locator("#experiment-empty")).toBeVisible();
   await page.getByRole("button", { name: "Clear filters" }).click();
-  await expect(page.locator(".listing-card:visible")).toHaveCount(22);
+  await expect(page.locator(".listing-card:visible")).toHaveCount(total);
 });
 
 test("every experiment fits mobile and desktop widths", async ({ page }) => {

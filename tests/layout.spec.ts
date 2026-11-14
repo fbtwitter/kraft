@@ -101,7 +101,7 @@ test("hero reshuffles on refresh and responds to pointer gravity", async ({
     await fragments
       .first()
       .evaluate((el) => el.style.getPropertyValue("--pull-x")),
-  ).toBe("");
+  ).toBe("0px");
 });
 
 test("collection categories restore legacy URL state and reset", async ({

@@ -11,7 +11,7 @@ test("all experiment layouts fit both themes, small screens and standalone views
   const routes = await page
     .locator(".listing-card")
     .evaluateAll((cards) => cards.map((card) => card.getAttribute("href")!));
-  expect(routes).toHaveLength(22);
+  expect(routes).toContain("/experiments/counter");
   for (const mode of ["light", "dark"]) {
     await page.evaluate(
       (value) => localStorage.setItem("kraft-mode", value),
