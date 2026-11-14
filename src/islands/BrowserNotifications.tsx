@@ -43,7 +43,7 @@ export default function BrowserNotifications() {
     }
   }
   return (
-    <div className="w-full max-w-xl space-y-5">
+    <div className="demo-layout">
       <div className="flex flex-wrap gap-3">
         <button className="btn primary" disabled={busy} onClick={send}>
           <Bell size={16} /> Allow and send

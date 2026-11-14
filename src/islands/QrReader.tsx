@@ -11,10 +11,12 @@ export default function QrReader() {
   );
   const [result, setResult] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
   const stop = () => {
     scanner.current?.stop();
     scanner.current?.destroy();
     scanner.current = null;
+    if (alive.current) setCameraActive(false);
   };
   useEffect(() => {
     alive.current = true;
@@ -59,6 +61,7 @@ export default function QrReader() {
           return;
         }
         setStatus("Camera active. Point it at a QR code.");
+        if (scanner.current === instance) setCameraActive(true);
       }
     } catch {
       stop();
@@ -73,7 +76,7 @@ export default function QrReader() {
     }
   }
   return (
-    <div className="w-full max-w-xl space-y-4">
+    <div className="demo-layout">
       <p className="muted">
         Images stay in this browser. Decoded links are shown as text and never
         opened automatically.
@@ -106,14 +109,22 @@ export default function QrReader() {
           />
         </label>
       </div>
-      <video
-        ref={video}
-        muted
-        playsInline
-        aria-label="QR camera preview"
-        className="w-full rounded-lg bg-black"
-        style={{ minHeight: 180, maxHeight: 320 }}
-      />
+      <div className="scanner-frame">
+        <video
+          ref={video}
+          muted
+          playsInline
+          aria-label="QR camera preview"
+          className="scanner-preview"
+        />
+        {!cameraActive && (
+          <div className="scanner-placeholder">
+            <Camera size={32} aria-hidden="true" />
+            <span>Camera preview</span>
+            <p>Start your camera or choose a QR image.</p>
+          </div>
+        )}
+      </div>
       <p role="status">{busy ? "Opening scanner…" : status}</p>
       {result && (
         <div className="rounded-lg border border-rule p-4">

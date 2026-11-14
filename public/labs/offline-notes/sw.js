@@ -1,4 +1,4 @@
-const CACHE = "kraft-offline-notes-v1";
+const CACHE = "kraft-offline-notes-v2";
 const HOME = "/labs/offline-notes/";
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.add(HOME)));

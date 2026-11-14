@@ -29,7 +29,7 @@ export default function CodeVerification() {
     setStatus("Demo code: 123456. No message is sent.");
   }
   return (
-    <div className="w-full max-w-lg space-y-5">
+    <div className="demo-layout">
       <label className="block">
         Preset{" "}
         <SelectField value={preset} onValueChange={(value) => reset(value)}>

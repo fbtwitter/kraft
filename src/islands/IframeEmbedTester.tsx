@@ -16,8 +16,7 @@ function normalizeUrl(raw: string): string | null {
   return `https://${trimmed}`;
 }
 
-const btnClass =
-  "font-[family-name:var(--font-mono)] text-sm uppercase tracking-wider px-3.5 py-2 border border-[color:var(--rule)] text-[color:var(--ink-2)] bg-transparent transition-colors hover:border-[color:var(--ink-3)] hover:text-[color:var(--ink)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[color:var(--rule)] disabled:hover:text-[color:var(--ink-2)]";
+const btnClass = "btn ghost";
 
 export default function IframeEmbedTester() {
   const [input, setInput] = useState("");
@@ -31,7 +30,7 @@ export default function IframeEmbedTester() {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4 font-sans">
+    <div className="demo-layout">
       <p className="text-base leading-relaxed text-(--ink-2)">
         Type any URL — your own app, a login screen, an internal tool, anything
         — and load it below in a real{" "}
@@ -56,7 +55,7 @@ export default function IframeEmbedTester() {
         </p>
       </details>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="embed-controls">
         <input
           aria-label="URL to embed"
           value={input}
@@ -67,7 +66,7 @@ export default function IframeEmbedTester() {
           placeholder="https://example.com or /labs/sample-page"
           className="min-w-0 flex-1 border border-rule px-3 py-2 font-mono text-base text-ink placeholder:text-ink-3 focus:border-ink-3 focus:outline-none"
         />
-        <button onClick={() => load()} className={btnClass}>
+        <button onClick={() => load()} className="btn primary">
           load
         </button>
         <button
@@ -104,10 +103,10 @@ export default function IframeEmbedTester() {
           key={iframeKey}
           title="embed target"
           src={src}
-          className="h-140 w-full border border-rule"
+          className="embed-preview"
         />
       ) : (
-        <div className="flex h-140 w-full items-center justify-center border border-dashed border-rule font-mono text-sm text-ink-3">
+        <div className="embed-preview embed-empty">
           enter a URL above and hit load
         </div>
       )}

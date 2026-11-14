@@ -30,7 +30,7 @@ export function ConnectionRecovery() {
     }, 1000);
   }
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <label>
         Preset{" "}
         <SelectField
@@ -104,7 +104,7 @@ export function AsyncStates() {
     );
   };
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <label>
         Preset{" "}
         <SelectField
@@ -170,7 +170,7 @@ export function ConfirmationFlow() {
   const [value, setValue] = useState("Sample item");
   const [saved, setSaved] = useState("Sample item");
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <label>
         Item name
         <input
@@ -222,7 +222,7 @@ export function SkeletonLoading() {
   const [preset, setPreset] = useState("cards");
   const pending = usePending();
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <label>
         Preset{" "}
         <SelectField value={preset} onValueChange={(value) => setPreset(value)}>
@@ -230,24 +230,26 @@ export function SkeletonLoading() {
           <option value="list">List</option>
         </SelectField>
       </label>
-      <button
-        className="btn primary"
-        onClick={() => {
-          setState("loading");
-          pending.after(() => setState("loaded"), 1800);
-        }}
-      >
-        Load preview
-      </button>
-      <button
-        className="btn ghost"
-        onClick={() => {
-          pending.cancel();
-          setState("ready");
-        }}
-      >
-        Reset
-      </button>
+      <div className="pattern-actions">
+        <button
+          className="btn primary"
+          onClick={() => {
+            setState("loading");
+            pending.after(() => setState("loaded"), 1800);
+          }}
+        >
+          Load preview
+        </button>
+        <button
+          className="btn ghost"
+          onClick={() => {
+            pending.cancel();
+            setState("ready");
+          }}
+        >
+          Reset
+        </button>
+      </div>
       <p role="status">
         {state === "loading"
           ? "Loading sample content…"
@@ -286,7 +288,7 @@ export function FeatureVariations() {
   const [variant, setVariant] = useState("list");
   const [enabled, setEnabled] = useState(true);
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <label>
         Variant{" "}
         <SelectField
@@ -336,9 +338,9 @@ export function PinEntry() {
     "Demo PIN: 2468. This does not authenticate an account.",
   );
   return (
-    <div className="pattern-demo">
+    <div className="pattern-demo demo-layout">
       <form
-        className="pattern-demo"
+        className="pattern-demo demo-layout"
         onSubmit={(e) => {
           e.preventDefault();
           if (pin === "2468") {

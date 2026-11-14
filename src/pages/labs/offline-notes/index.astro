@@ -84,6 +84,8 @@
         font: 16px/1.6 system-ui;
         background: #101316;
         color: #f3f4ef;
+        color-scheme: dark;
+        scrollbar-gutter: stable;
       }
       body {
         margin: 0;
@@ -92,6 +94,35 @@
         max-width: 640px;
         margin: auto;
         padding: 40px 24px;
+        display: grid;
+        gap: 20px;
+      }
+      main > * {
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(2rem, 6vw, 2.75rem);
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.04em;
+      }
+      p {
+        color: #bac1c8;
+        font-size: 0.9375rem;
+      }
+      #connection {
+        justify-self: start;
+        padding: 6px 10px;
+        border: 1px solid #293037;
+        border-radius: 4px;
+        font-size: 0.8125rem;
+      }
+      #saved:empty {
+        display: none;
+      }
+      #saved,
+      #offline {
+        font-size: 0.875rem;
       }
       a {
         color: #80d9ad;
@@ -105,13 +136,15 @@
         display: block;
         box-sizing: border-box;
         width: 100%;
-        margin: 8px 0 16px;
+        margin: -12px 0 0;
         padding: 12px;
         font: inherit;
         background: #191f23;
         color: inherit;
         border: 1px solid #657169;
         border-radius: 6px;
+        resize: vertical;
+        min-height: 200px;
       }
       button {
         font: inherit;
@@ -121,6 +154,8 @@
         border: 0;
         border-radius: 6px;
         cursor: pointer;
+        justify-self: start;
+        min-height: 46px;
       }
       :focus-visible {
         outline: 2px solid #80d9ad;

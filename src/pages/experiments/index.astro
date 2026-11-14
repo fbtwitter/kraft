@@ -6,6 +6,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 const experiments = (
   await getCollection("experiments", ({ data }) => !data.draft)
 ).sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+const categories = [
+  ...new Set(experiments.map((exp) => exp.data.category)),
+].sort();
 ---
 
 <BaseLayout
@@ -20,7 +23,12 @@ const experiments = (
         Small ideas you can try. Pick an experiment and see how it works.
       </p>
     </header>
-    <form class="collection-filters" role="search" onsubmit="return false">
+    <form
+      class="collection-filters"
+      role="search"
+      aria-label="Filter experiments"
+      onsubmit="return false"
+    >
       <label
         >Find an experiment<input
           type="search"
@@ -29,12 +37,12 @@ const experiments = (
         /></label
       >
       <label
-        >Topic<TopicSelect
-          ><select id="experiment-topic" aria-label="Topic"
-            ><option value="">All topics</option>{
-              [...new Set(experiments.flatMap((exp) => exp.data.tags))]
-                .sort()
-                .map((tag) => <option value={tag}>{tag}</option>)
+        >Category<TopicSelect
+          ><select id="experiment-topic" aria-label="Category"
+            ><option value="">All categories</option>{
+              categories.map((category) => (
+                <option value={category}>{category}</option>
+              ))
             }</select
           ></TopicSelect
         ></label
@@ -47,36 +55,39 @@ const experiments = (
     <p id="experiment-empty" class="muted" hidden>
       No experiments match. Try another word or clear your filters.
     </p>
-    <div class="listing-grid">
-      {
-        experiments.map((exp) => (
-          <a
-            class="listing-card"
-            href={`/experiments/${exp.id}`}
-            data-search={`${exp.data.title} ${exp.data.description} ${exp.data.tags.join(" ")}`.toLowerCase()}
-            data-tags={exp.data.tags.join(" ")}
-          >
-            <div class="listing-copy">
-              <div class="tags">
-                {exp.data.tags.slice(0, 3).map((tag) => (
-                  <span class="chip">{tag}</span>
-                ))}
-              </div>
-              <h2>{exp.data.title}</h2>
-              <p class="muted">{exp.data.description}</p>
-              <span class="action">
-                Try experiment{" "}
-                <Icon
-                  name="lucide:arrow-up-right"
-                  size={16}
-                  aria-hidden="true"
-                />
-              </span>
-            </div>
-          </a>
-        ))
-      }
-    </div>
+    {
+      categories.map((category) => (
+        <section class="category-group" aria-label={category}>
+          <h2 class="category-heading">{category}</h2>
+          <div class="listing-grid">
+            {experiments
+              .filter((exp) => exp.data.category === category)
+              .map((exp) => (
+                <a
+                  class="listing-card"
+                  href={`/experiments/${exp.id}`}
+                  data-search={`${exp.data.title} ${exp.data.description} ${exp.data.tags.join(" ")}`.toLowerCase()}
+                  data-tags={exp.data.tags.join(" ")}
+                  data-category={exp.data.category}
+                >
+                  <div class="listing-copy">
+                    <h2>{exp.data.title}</h2>
+                    <p class="muted">{exp.data.description}</p>
+                    <span class="action">
+                      Try experiment{" "}
+                      <Icon
+                        name="lucide:arrow-up-right"
+                        size={16}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                </a>
+              ))}
+          </div>
+        </section>
+      ))
+    }
   </div>
 </BaseLayout>
 <script>
@@ -90,28 +101,37 @@ const experiments = (
     const cards = [...document.querySelectorAll<HTMLElement>(".listing-card")];
     const params = new URLSearchParams(location.search);
     query.value = params.get("q") || "";
-    topic.value = params.get("topic") || "";
+    const initial = params.get("category") || params.get("topic") || "";
+    topic.value = [...topic.options].some((option) => option.value === initial)
+      ? initial
+      : cards.find((card) => card.dataset.tags!.split(" ").includes(initial))
+          ?.dataset.category || "";
     function filter() {
       const text = query!.value.trim().toLowerCase();
       let count = 0;
       for (const card of cards) {
         card.hidden = !(
           card.dataset.search!.includes(text) &&
-          (!topic!.value ||
-            card.dataset.tags!.split(" ").includes(topic!.value))
+          (!topic!.value || card.dataset.category === topic!.value)
         );
         if (!card.hidden) count++;
       }
       document.getElementById("experiment-results")!.textContent =
         `${count} ${count === 1 ? "experiment" : "experiments"}`;
       document.getElementById("experiment-empty")!.hidden = count > 0;
+      document
+        .querySelectorAll<HTMLElement>(".category-group")
+        .forEach((group) => {
+          group.hidden = !group.querySelector(".listing-card:not([hidden])");
+        });
       const url = new URL(location.href);
       text
         ? url.searchParams.set("q", query!.value)
         : url.searchParams.delete("q");
       topic!.value
-        ? url.searchParams.set("topic", topic!.value)
-        : url.searchParams.delete("topic");
+        ? url.searchParams.set("category", topic!.value)
+        : url.searchParams.delete("category");
+      url.searchParams.delete("topic");
       history.replaceState(history.state, "", url);
     }
     query.addEventListener("input", filter, { signal: controller.signal });
@@ -126,6 +146,7 @@ const experiments = (
       { signal: controller.signal },
     );
     filter();
+    topic.dispatchEvent(new Event("change", { bubbles: true }));
     document.addEventListener("astro:before-swap", () => controller.abort(), {
       once: true,
     });
@@ -133,11 +154,15 @@ const experiments = (
 </script>
 <style>
   .collection-filters {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px) auto;
     align-items: flex-end;
     gap: 16px;
     margin-bottom: 20px;
+    padding: 24px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--surface);
   }
   .collection-filters label {
     display: flex;
@@ -149,9 +174,19 @@ const experiments = (
   .collection-filters label:nth-child(2) {
     flex: 0 1 200px;
   }
+  .collection-filters label {
+    max-width: none;
+    min-width: 0;
+    color: var(--ink-2);
+  }
+  .collection-filters .btn {
+    min-height: 46px;
+    white-space: nowrap;
+  }
   .collection-filters input,
   .collection-filters select {
     width: 100%;
+    max-width: none;
     min-height: 46px;
     padding: 10px 12px;
     border: 1px solid var(--rule);
@@ -162,6 +197,13 @@ const experiments = (
   }
   .filter-count {
     margin-bottom: 24px;
+  }
+  .category-group {
+    margin-bottom: 40px;
+  }
+  .category-heading {
+    margin: 0 0 20px;
+    font-size: 1.25rem;
   }
   .listing-card[hidden],
   [hidden] {
@@ -184,7 +226,7 @@ const experiments = (
     gap: 24px;
   }
   .listing-card {
-    min-height: 260px;
+    min-height: 220px;
     border: 1px solid var(--rule);
     border-radius: 10px;
     overflow: hidden;
@@ -203,7 +245,7 @@ const experiments = (
     border-bottom: 1px solid var(--rule);
   }
   .listing-copy {
-    padding: 28px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -217,7 +259,7 @@ const experiments = (
   h2 {
     font-size: 1.5rem;
     font-weight: 500;
-    margin: 20px 0 12px;
+    margin: 0 0 12px;
     letter-spacing: -0.035em;
   }
   .listing-copy p {
@@ -230,6 +272,10 @@ const experiments = (
     margin-top: auto;
   }
   @media (max-width: 650px) {
+    .collection-filters {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 20px;
+    }
     .listing-grid {
       grid-template-columns: 1fr;
     }

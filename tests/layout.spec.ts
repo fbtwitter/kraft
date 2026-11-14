@@ -36,28 +36,86 @@ test("lab layout fits narrow screens and theme survives experiment navigation", 
     }
   }
   await page.goto("/experiments/counter");
-  await page.getByRole("button", { name: "+", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Increase count", exact: true })
+    .click();
   await expect(page.getByText("1", { exact: true })).toBeVisible();
   await page
     .getByRole("link", { name: "all experiments", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/experiments\/?$/);
   await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
 });
 
-test("hero reshuffles on refresh and responds to pointer gravity", async ({ page }) => {
+test("hero reshuffles on refresh and responds to pointer gravity", async ({
+  page,
+}) => {
   await page.goto("/");
   const fragments = page.locator(".code-fragment");
-  await expect.poll(() => fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).not.toBe("");
-  const before = await fragments.evaluateAll(nodes => nodes.map(el => `${el.textContent}:${el.getAttribute("style")}`).join("|"));
+  await expect
+    .poll(() =>
+      fragments.first().evaluate((el) => el.style.getPropertyValue("--pull-x")),
+    )
+    .not.toBe("");
+  const before = await fragments.evaluateAll((nodes) =>
+    nodes
+      .map((el) => `${el.textContent}:${el.getAttribute("style")}`)
+      .join("|"),
+  );
   await page.reload();
-  await expect.poll(() => fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).not.toBe("");
-  expect(await fragments.evaluateAll(nodes => nodes.map(el => `${el.textContent}:${el.getAttribute("style")}`).join("|"))).not.toBe(before);
+  await expect
+    .poll(() =>
+      fragments.first().evaluate((el) => el.style.getPropertyValue("--pull-x")),
+    )
+    .not.toBe("");
+  expect(
+    await fragments.evaluateAll((nodes) =>
+      nodes
+        .map((el) => `${el.textContent}:${el.getAttribute("style")}`)
+        .join("|"),
+    ),
+  ).not.toBe(before);
   await page.mouse.move(300, 250);
-  await expect.poll(() => fragments.evaluateAll(nodes => nodes.some(el => Math.abs(parseFloat((el as HTMLElement).style.getPropertyValue("--pull-x"))) > 0.1))).toBe(true);
+  await expect
+    .poll(() =>
+      fragments.evaluateAll((nodes) =>
+        nodes.some(
+          (el) =>
+            Math.abs(
+              parseFloat(
+                (el as HTMLElement).style.getPropertyValue("--pull-x"),
+              ),
+            ) > 0.1,
+        ),
+      ),
+    )
+    .toBe(true);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(fragments.first()).not.toHaveCSS("animation-name", "fragment-drift");
-  expect(await fragments.first().evaluate(el => el.style.getPropertyValue("--pull-x"))).toBe("");
+  await expect(fragments.first()).not.toHaveCSS(
+    "animation-name",
+    "fragment-drift",
+  );
+  expect(
+    await fragments
+      .first()
+      .evaluate((el) => el.style.getPropertyValue("--pull-x")),
+  ).toBe("");
+});
+
+test("collection categories restore legacy URL state and reset", async ({
+  page,
+}) => {
+  await page.goto("/experiments?topic=forms");
+  const topic = page.locator('button[role="combobox"][aria-label="Category"]');
+  await expect(topic).toContainText("Forms & input");
+  await topic.click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(topic).toBeFocused();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(topic).toContainText("All categories");
+  await page.getByRole("searchbox").fill("counter");
+  await expect(page.locator(".listing-card:visible")).toHaveCount(1);
 });

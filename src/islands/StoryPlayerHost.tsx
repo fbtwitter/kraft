@@ -348,7 +348,7 @@ export default function StoryPlayerHost() {
   }, [reloadKey, presetId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4">
+    <div className="demo-layout story-host">
       <div className="flex w-full min-w-0 flex-col gap-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm text-(--ink-2)">
@@ -375,7 +375,7 @@ export default function StoryPlayerHost() {
               setLog([]);
               setReloadKey((k) => k + 1);
             }}
-            className="min-h-11 rounded-lg border border-(--rule) px-3 text-sm text-(--ink-2) hover:text-(--ink)"
+            className="btn ghost"
           >
             Restart
           </button>

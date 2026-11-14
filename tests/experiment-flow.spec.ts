@@ -4,12 +4,7 @@ test("discover an experiment, control playback, and inspect its messages", async
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".idx-row img")).toHaveCount(4);
-  await page
-    .locator(".idx-row img")
-    .evaluateAll((images) =>
-      Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
-    );
+  await expect(page.locator(".idx-row")).toHaveCount(22);
   await page.screenshot({
     path: "test-results/home-desktop.png",
     fullPage: true,
@@ -149,7 +144,7 @@ test("media preset shares images and lets the host open links", async ({
     frame.getByText("Slide 3 of 3 · Paused", { exact: true }),
   ).toBeVisible();
   const popupPromise = page.waitForEvent("popup");
-  await frame.getByRole("link", { name: "Lihat Insight Lengkap" }).click();
+  await frame.getByRole("link", { name: "Lihat Kilas Balik" }).click();
   const popup = await popupPromise;
   await expect(popup).toHaveURL("https://example.com/");
   expect(errors).toEqual([]);

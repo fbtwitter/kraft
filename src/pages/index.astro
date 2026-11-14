@@ -107,9 +107,7 @@ const dateLabel = (date: Date) =>
                     {featured.data.description}
                   </p>
                   <div class="experiment-tags">
-                    {featured.data.tags.slice(0, 3).map((tag: string) => (
-                      <span class="chip">{tag}</span>
-                    ))}
+                    <span class="chip">{featured.data.category}</span>
                   </div>
                   <span class="experiment-action">
                     Try experiment{" "}
@@ -169,7 +167,7 @@ const dateLabel = (date: Date) =>
               >
                 <div class="experiment-card-copy">
                   <div class="experiment-card-meta">
-                    <span>{exp.data.tags[0] ?? "experiment"}</span>
+                    <span>{exp.data.category}</span>
                     <time datetime={exp.data.publishedAt.toISOString()}>
                       {dateLabel(exp.data.publishedAt)}
                     </time>

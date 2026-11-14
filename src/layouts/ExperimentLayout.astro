@@ -6,6 +6,7 @@ interface Props {
   title: string;
   description: string;
   tags?: string[];
+  category: string;
   slug: string;
   githubRepo?: string;
   tipsUrl?: string;
@@ -16,6 +17,7 @@ const {
   title,
   description,
   tags = [],
+  category,
   slug,
   githubRepo = "fbtwitter/kraft",
   tipsUrl,
@@ -31,17 +33,22 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
   tags={tags}
   includeOutfitFont={slug === "qr-code-card"}
 >
-  <div class="wrap pt-8 pb-12 sm:pt-10 sm:pb-16 md:pt-14">
-    <a href="/" class="back-link">
+  <div class="wrap experiment-page pt-8 pb-12 sm:pt-10 sm:pb-16 md:pt-14">
+    <a href="/experiments" class="back-link">
       <Icon name="lucide:arrow-left" size={14} aria-hidden="true" />
       all experiments
     </a>
 
-    <div
-      class="grid gap-8 pb-9 sm:pb-12 md:grid-cols-[minmax(0,1fr)_minmax(180px,0.45fr)] md:items-end md:gap-12"
-    >
+    <div class="pb-8 sm:pb-10">
       <header>
-        <p class="meta mb-3">kraft / experiment</p>
+        <div class="mb-4 flex flex-wrap items-center gap-3">
+          <span class="meta">kraft / experiment</span>
+          <a
+            class="chip"
+            href={`/experiments?category=${encodeURIComponent(category)}`}
+            >{category}</a
+          >
+        </div>
         <h1
           class="display mb-4 text-[clamp(2.5rem,7vw,4.5rem)] leading-[1.02] tracking-[-0.04em]"
         >
@@ -51,16 +58,6 @@ const feedbackUrl = `https://github.com/${githubRepo}/issues/new?title=${encodeU
           {description}
         </p>
       </header>
-
-      {
-        tags.length > 0 && (
-          <div class="flex flex-wrap gap-2 md:justify-end">
-            {tags.map((tag) => (
-              <span class="chip">{tag}</span>
-            ))}
-          </div>
-        )
-      }
     </div>
 
     <nav

@@ -4,7 +4,7 @@ export default function ToastFeedback() {
   const [messages, setMessages] = useState<{ id: number; type: string }[]>([]);
   const [undo, setUndo] = useState(false);
   return (
-    <div className="w-full max-w-xl space-y-5">
+    <div className="demo-layout">
       <div className="flex flex-wrap gap-3">
         {["Success", "Error", "Information", "Undo action"].map((type) => (
           <button
@@ -21,10 +21,7 @@ export default function ToastFeedback() {
           </button>
         ))}
       </div>
-      <div
-        className="min-h-48 space-y-3 rounded-lg border border-dashed border-rule p-4"
-        aria-label="Notification preview"
-      >
+      <div className="toast-preview" aria-label="Notification preview">
         {!messages.length && (
           <p className="muted">
             Trigger feedback above. Up to three messages stay visible.
@@ -33,7 +30,8 @@ export default function ToastFeedback() {
         {messages.map((message) => (
           <div
             key={message.id}
-            className="flex items-start gap-3 rounded-lg border border-rule bg-bg p-4"
+            className="toast-message"
+            data-tone={message.type}
             role={message.type === "Error" ? "alert" : "status"}
           >
             {message.type === "Success" ? (
@@ -69,6 +67,7 @@ export default function ToastFeedback() {
               )}
             </div>
             <button
+              className="toast-dismiss"
               aria-label="Dismiss notification"
               onClick={() =>
                 setMessages((items) =>

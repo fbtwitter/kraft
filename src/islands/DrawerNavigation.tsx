@@ -8,7 +8,7 @@ export default function DrawerNavigation() {
   const [saved, setSaved] = useState(false);
   const current = history[history.length - 1];
   return (
-    <div className="w-full max-w-xl space-y-5">
+    <div className="demo-layout">
       <label>
         Preset{" "}
         <SelectField value={side} onValueChange={(value) => setSide(value)}>

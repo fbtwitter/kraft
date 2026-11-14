@@ -7,6 +7,13 @@ const experiments = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    category: z.enum([
+      "Forms & input",
+      "Navigation & content",
+      "Feedback & loading",
+      "Browser capabilities",
+      "Lists & planning",
+    ]),
     tags: z.array(z.string()).default([]),
     publishedAt: z.coerce.date(),
     draft: z.boolean().default(false),

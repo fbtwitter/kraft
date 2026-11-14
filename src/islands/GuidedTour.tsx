@@ -55,6 +55,7 @@ export default function GuidedTour() {
           },
         );
       instance.current = driver({
+        popoverClass: "kraft-tour",
         steps,
         showProgress: steps.length > 1,
         animate: !matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -76,7 +77,7 @@ export default function GuidedTour() {
     } else launch();
   }
   return (
-    <div className="w-full max-w-2xl space-y-5">
+    <div className="demo-layout">
       <label className="block">
         Preset{" "}
         <SelectField
