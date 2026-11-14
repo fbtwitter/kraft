@@ -9,11 +9,8 @@ export function setupMotion() {
         observer.unobserve(entry.target);
         if (preference.matches) continue;
         const animation = entry.target.animate(
-          [
-            { opacity: 0, transform: "translateY(12px)" },
-            { opacity: 1, transform: "translateY(0)" },
-          ],
-          { duration: 420, easing: "cubic-bezier(.2,.7,.2,1)" },
+          [{ opacity: 0.75 }, { opacity: 1 }],
+          { duration: 180, easing: "ease-out" },
         );
         animations.add(animation);
         animation.finished
@@ -25,7 +22,7 @@ export function setupMotion() {
   );
   document
     .querySelectorAll(
-      ".featured-copy, .featured-preview, .catalog-intro, .experiment-card, .listing header, .listing-card",
+      ".featured-copy, .catalog-intro, .experiment-card, .listing header, .listing-card",
     )
     .forEach((element) => observer.observe(element));
   const cancel = () => {

@@ -53,12 +53,14 @@ test("polished controls retain their interactive states", async ({ page }) => {
   await page.getByRole("button", { name: "Decrease count" }).click();
   await expect(page.getByLabel("Current count")).toHaveText("0");
   await page.goto("/experiments/code-verification");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page.getByRole("textbox", { name: "Verification code" }).fill("123456");
   await page.getByRole("button", { name: "Verify code" }).click();
   await expect(page.locator("#verification-status")).toHaveText(
     "Code verified.",
   );
   await page.goto("/experiments/pin-entry");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page.getByLabel("Four-digit PIN", { exact: true }).fill("2468");
   await page.getByRole("button", { name: "Check PIN" }).click();
   await expect(page.locator("#demo-pin-status")).toHaveText("PIN accepted.");
@@ -122,6 +124,7 @@ test("remaining demo flows survive the visual polish", async ({
   await expect(page.locator(".driver-popover")).toBeVisible();
   await page.keyboard.press("Escape");
   await page.goto("/experiments/qr-reader");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page
     .locator("input[type=file]")
     .setInputFiles("public/experiments/previews/qr-code-card.png");

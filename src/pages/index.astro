@@ -230,6 +230,10 @@ const dateLabel = (date: Date) =>
           pointer = null;
         };
         const tick = () => {
+          if (reduced.matches || document.hidden) {
+            sync();
+            return;
+          }
           fragments.forEach((fragment, index) => {
             const offset = offsets[index];
             const dx = pointer
@@ -238,9 +242,7 @@ const dateLabel = (date: Date) =>
             const dy = pointer
               ? pointer.y - fragment.offsetTop - fragment.offsetHeight / 2
               : 0;
-            const pull = reduced.matches
-              ? 0
-              : Math.max(0, 1 - Math.hypot(dx, dy) / 500) * 0.3;
+            const pull = Math.max(0, 1 - Math.hypot(dx, dy) / 500) * 0.3;
             offset.x += (dx * pull - offset.x) * 0.045;
             offset.y += (dy * pull - offset.y) * 0.045;
             fragment.style.setProperty("--pull-x", `${offset.x}px`);

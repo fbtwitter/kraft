@@ -353,47 +353,6 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero-copy {
-    animation: kraft-enter 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  }
-  kraft-sculpture {
-    animation: kraft-enter 850ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  }
-  .btn,
-  .hdr-btn,
-  .experiment-card,
-  .featured-preview {
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      transform 220ms ease;
-  }
-  .experiment-action span {
-    display: inline-block;
-    transition: transform 180ms ease;
-  }
-  .idx-row:hover .experiment-action span {
-    transform: translate(3px, -2px);
-  }
-  .experiment-card:hover {
-    transform: translateY(-3px);
-  }
-  .btn:active,
-  .hdr-btn:active {
-    transform: scale(0.97);
-  }
-  @keyframes kraft-enter {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
 html[data-mode="light"] .brand-mark {
   filter: brightness(0.55);
 }
@@ -410,17 +369,6 @@ svg.lucide {
   flex-shrink: 0;
   vertical-align: middle;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .experiment-action svg,
-  .listing-card .action svg {
-    transition: transform 180ms ease;
-  }
-  .idx-row:hover .experiment-action svg,
-  .listing-card:hover .action svg {
-    transform: translate(3px, -2px);
-  }
-}
-
 /* Demo surfaces and their supporting MDX are separate layout blocks. */
 .experiment-stage {
   display: block;

@@ -73,6 +73,7 @@ test("guided tour presets open and close cleanly", async ({ page }) => {
 
 test("QR image decoding works without requesting camera", async ({ page }) => {
   await page.goto("/experiments/qr-reader");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page
     .locator('input[type="file"]')
     .setInputFiles(
@@ -85,6 +86,7 @@ test("generic verification, drawers, feedback and notification preview work", as
   page,
 }) => {
   await page.goto("/experiments/code-verification");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page.getByLabel("Verification code").fill("000000");
   await page.getByRole("button", { name: "Verify code", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("does not match");
@@ -117,7 +119,7 @@ test("additional interaction patterns handle their main state changes", async ({
   page,
 }) => {
   await page.goto("/experiments/pin-entry");
-
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page.locator(".pin-field").fill("2468");
   await page.getByRole("button", { name: "Check PIN" }).click();
   await expect(page.getByRole("status")).toHaveText("PIN accepted.");
@@ -130,6 +132,7 @@ test("additional interaction patterns handle their main state changes", async ({
   await page.getByRole("button", { name: "Cancel request" }).click();
   await expect(page.getByRole("status")).toHaveText("Cancelled");
   await page.goto("/experiments/confirmation-flow");
+  await page.locator("astro-island[ssr]").waitFor({ state: "detached" });
   await page.getByLabel("Item name").fill("Changed item");
   await page.getByRole("button", { name: "Review change" }).click();
   await page

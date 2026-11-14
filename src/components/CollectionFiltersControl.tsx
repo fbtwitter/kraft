@@ -22,6 +22,17 @@ export default function CollectionFiltersControl({ categories }: Props) {
       : cards.find((card) => card.dataset.tags!.split(" ").includes(initial))
           ?.dataset.category || "";
     setFilters({ query: params.get("q") || "", category });
+    const preference = matchMedia("(prefers-reduced-motion: reduce)");
+    const cancel = () =>
+      root
+        .querySelector("#experiment-results")!
+        .getAnimations()
+        .forEach((animation) => animation.cancel());
+    preference.addEventListener("change", cancel);
+    return () => {
+      cancel();
+      preference.removeEventListener("change", cancel);
+    };
   }, [categories]);
 
   useEffect(() => {
@@ -36,8 +47,15 @@ export default function CollectionFiltersControl({ categories }: Props) {
       );
       if (!card.hidden) count++;
     }
-    root.querySelector("#experiment-results")!.textContent =
-      `${count} ${count === 1 ? "experiment" : "experiments"}`;
+    const results = root.querySelector<HTMLElement>("#experiment-results")!;
+    const label = `${count} ${count === 1 ? "experiment" : "experiments"}`;
+    if (results.textContent?.trim() !== label) {
+      results.textContent = label;
+      results.getAnimations().forEach((animation) => animation.cancel());
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        results.animate([{ opacity: 0.55 }, { opacity: 1 }], { duration: 160 });
+      }
+    }
     root.querySelector<HTMLElement>("#experiment-empty")!.hidden = count > 0;
     for (const group of root.querySelectorAll<HTMLElement>(".category-group")) {
       group.hidden = !group.querySelector(".listing-card:not([hidden])");
@@ -63,6 +81,7 @@ export default function CollectionFiltersControl({ categories }: Props) {
       onReset={(event) => {
         event.preventDefault();
         setFilters({ query: "", category: "" });
+        form.current!.querySelector("input")!.focus();
       }}
     >
       <label>
@@ -71,6 +90,7 @@ export default function CollectionFiltersControl({ categories }: Props) {
           type="search"
           id="experiment-query"
           placeholder="Search titles, descriptions, or tags"
+          disabled={filters === null}
           value={filters?.query ?? ""}
           onChange={(event) =>
             setFilters({
@@ -101,7 +121,7 @@ export default function CollectionFiltersControl({ categories }: Props) {
             ))}
           </SelectField>
         ) : (
-          <select aria-label="Category" defaultValue="">
+          <select aria-label="Category" defaultValue="" disabled>
             <option value="">All categories</option>
             {categories.map((category) => (
               <option key={category} value={category}>
@@ -111,7 +131,11 @@ export default function CollectionFiltersControl({ categories }: Props) {
           </select>
         )}
       </label>
-      <button type="reset" className="btn ghost">
+      <button
+        type="reset"
+        className="btn ghost"
+        disabled={!filters || (!filters.query && !filters.category)}
+      >
         Clear filters
       </button>
     </form>
